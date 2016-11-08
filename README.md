@@ -1,6 +1,6 @@
 # AVENGEME
 
-AVENGEME is a set of R functions for the analysis of the polygenic scoring method.
+AVENGEME is a set of R functions for the analysis of the polygenic scoring method. This branch is a proposed extension to the basic methodology.
 
 ## Citation
 
