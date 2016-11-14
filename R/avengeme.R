@@ -10,9 +10,12 @@
 # Any questions to frank.dudbridge@lshtm.ac.uk
 #
 # This file contains three functions:
-# polygenescore(): power, area under curve and correlation for estimated gene scores
-# sampleSizeForGeneScore(): calculate the size of training sample required to achieve a given AUC, R2 or power
-# estimatePolygenicModel(): estimate parameters of genetic model from a set of p-values obtained for the polygenic score in the target sample
+# 	polygenescore(): 
+#		power, area under curve and correlation for estimated gene scores
+# 	sampleSizeForGeneScore(): 
+#		calculate the size of training sample required to achieve a given AUC, R2 or power
+# 	estimatePolygenicModel():
+#		estimate parameters of genetic model from a set of p-values obtained for the polygenic score in the target sample
 #
 # the functions have a common set of core parameters, which are described below under polygenescore
 #
