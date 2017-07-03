@@ -28,11 +28,11 @@ No default - a value must be given}
 
 \item{pupper}{Vector of p-value thresholds for selecting markers from training sample. First element is the lower bound of the first interval, second element is the upper bound of the first interval, third element is the upper bound of the second interval, etc.}
 
-\item{nested}{T if the p-value intervals are nested, that is they have the same lower bound, which is the first element of pupper. If false, lower bound of the second interval is the upper bound of the first and so on.}
+\item{nested}{TRUE if the p-value intervals are nested, that is they have the same lower bound, which is the first element of pupper. If false, lower bound of the second interval is the upper bound of the first and so on.}
 
-\item{weighted}{T if estimated effect sizes are used as weights in forming the polygenic score. If false, an unweighted score is used, which is the sum of risk alleles carried.}
+\item{weighted}{TRUE if estimated effect sizes are used as weights in forming the polygenic score. If false, an unweighted score is used, which is the sum of risk alleles carried.}
 
-\item{binary}{T if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
+\item{binary}{TRUE if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
 
 \item{prevalence}{For a binary trait, prevalence in the training sample, By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.}
 
@@ -40,21 +40,21 @@ No default - a value must be given}
 
 \item{lambdaS}{Sibling relative recurrence risk in training sample, can be specified instead of vg1.}
 
-\item{shrinkage}{T if effect sizes are to be shrunk to BLUPs.}
+\item{shrinkage}{TRUE if effect sizes are to be shrunk to BLUPs.}
 
-\item{logrisk}{T if binary trait arises from log-risk model rather than liability threshold.}
+\item{logrisk}{TRUE if binary trait arises from log-risk model rather than liability threshold.}
 
 \item{option}{Parameter used in method development.  Default 0, fits the model by maximum likelihood for Z statistics.  1 and 2 fit the model by least squares to chisq and Z statistics respectively.  3 fits by maximum likelihood for chisq statistics.}
 
 \item{boot}{Number of bootstrap replicates to estimate approximate confidence intervals. If boot==0 (default), an analytic interval is calculated using profile likelihood.
 if boot>0, a bootstrap interval is estimated. These intervals assume that the input P-values are independent; this assumption is generally untrue and the interval will be slightly smaller than it should be.}
 
-\item{bidirectional}{T if results are also given when exchanging the role of training and target samples.
+\item{bidirectional}{TRUE if results are also given when exchanging the role of training and target samples.
 In this case, vg2 can also be estimated, as can pi0 in the target sample. The input vector p should now be twice as long with the list of P-values for training/target followed by the list for target/training.}
 
 \item{initial}{Specify starting values for numerical maximisation of the likelihood.  The number of elements must equal the number of estimated parameters, and follows the order vg[1], vg[2], pi0[1], pi0[2], cov12, for those parameters that are actually being estimated.  Default 0.5 for all parameters.}
 
-\item{fixvg2pi02}{T if the same genetic model is assumed for the training and target samples.
+\item{fixvg2pi02}{TRUE if the same genetic model is assumed for the training and target samples.
 This fixes the target variance and the covariance to both equal the variance explained in the training sample, vg1. Also fixes the proportion of null markers in the target sample to equal the proportion in the training sample.}
 }
 \value{
@@ -87,7 +87,7 @@ Any combination of parameters can be estimated.  A parameter will be estimated i
 pupper=c(0,5e-8,1e-6,1e-4,1e-3,0.01,0.05,0.1,0.2,0.5,1)
 p=c(9.85087e-24, 4.44037e-36, 2.08048e-71, 8.0594e-103, 2.0587e-138,
     1.4131e-164,5.8954e-166,3.75e-164,7.9488e-159,2.3286e-157)
-estimatePolygenicModel(p,103125,c(77195,5120),pupper=pupper,nested=T,binary=T,prevalence=0.01,sampling=c(0.425,0.515),fixvg2pi02=T)
+estimatePolygenicModel(p,103125,c(77195,5120),pupper=pupper,nested=TRUE,binary=TRUE,prevalence=0.01,sampling=c(0.425,0.515),fixvg2pi02=TRUE)
 # $vg
 # [1] 0.2449328 0.2352049 0.2547500
 #
@@ -121,7 +121,7 @@ X2=c(n2*R2O/(1-R2O),X2)
 # Perform bidirectional estimation with Z-scores as the first argument
 # Small difference from published result due to minor bug fixes
 pupper=c(0,.0001,.001,.01,.05,.1,.2,.3,.4,.5,1)
-estimatePolygenicModel(sqrt(X2),nsnp=83884,n=c(n1,n2),binary=T,pupper=pupper,prevalence=c(0.01,0.01),sampling=c(p1,p2),bidirectional=T)
+estimatePolygenicModel(sqrt(X2),nsnp=83884,n=c(n1,n2),binary=TRUE,pupper=pupper,prevalence=c(0.01,0.01),sampling=c(p1,p2),bidirectional=TRUE)
 # $vg
 # vg      vgLo      vgHi
 # [1,] 0.8800473 0.1784087 0.9999528

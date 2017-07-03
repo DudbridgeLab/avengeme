@@ -19,7 +19,7 @@
 
 #' @examples
 #' # AUC= 0.75 in breast cancer.  See Table 4, row 4, column 3 in Dudbridge (2013).
-#' sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=T,prevalence=0.036,sampling=0.5)
+#' sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=TRUE,prevalence=0.036,sampling=0.5)
 #' # $n
 #' # [1] 313981.4
 #' #
@@ -59,7 +59,7 @@ sampleSizeForGeneScore=function(targetQuantity,
 					  adjustedEffects=F) {
 
 ###
-# internal objective function, returns AUC/R2/Power for given pupper and n1 
+# internal objective function, returns AUC/R2/Power for given pupper and n1
  obj2=function(p,n1) {
     if (is.na(n2)) {n2here=n1}
     else n2here=n2;

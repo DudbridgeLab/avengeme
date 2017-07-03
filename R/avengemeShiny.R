@@ -14,10 +14,10 @@
 #' Palla L and Dudbridge F (2015) A fast method using polygenic scores to estimate the variance explained by genome-wide marker panels and the proportion of variants affecting a trait. Am J Hum Genet 97:250-259
 #' @export
 avengemeShiny <- function() {
-  appDir <- system.file("shiny", "avengeme", package = "avengeme")
+  appDir <- system.file("shiny", package = "avengeme")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `avengeme`.", call. = FALSE)
   }
 
-  shiny::runApp(appDir, display.mode = "normal")
+  runApp(appDir, display.mode = "normal")
 }

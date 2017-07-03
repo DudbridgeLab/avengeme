@@ -8,8 +8,8 @@
 #' @param xlim Vector of 2 elements, giving the range of sample size to display on the x-axis, in 1000s.  For binary traits this is the number of cases.
 #' @param ylim Range of AUC/R2 to display on y-axis.
 #' @param nsnp Number of independent SNPs in the gene score.
-#' @param fix T if the same genetic model is assumed for the training and target samples.
-#' @param plot T is a new plot is to be drawn, otherwise draw lines on the existing plot.
+#' @param fix TRUE if the same genetic model is assumed for the training and target samples.
+#' @param plot TRUE is a new plot is to be drawn, otherwise draw lines on the existing plot.
 #' @param col Colour in which to plot.
 #' @param breakeven Value of AUC/R2 for which the minimum sample size will be estimated.
 #' @param lty Line type parameter for R plots.
@@ -26,7 +26,7 @@
 
 #' @examples
 #' # Breast cancer with 90% null markers, from figure 3 in Dudbridge (2013)
-#' plotAccuracy(vg1=0.44/2,pi0=0.90,fix=T,binary=T,prevalence=0.036)
+#' plotAccuracy(vg1=0.44/2,pi0=0.90,fix=TRUE,binary=TRUE,prevalence=0.036)
 
 #' @author Frank Dudbridge
 

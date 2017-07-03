@@ -22,9 +22,9 @@ plotAccuracy(xlim = c(1, 500), ylim = 0, nsnp = 1e+05, vg1 = 0,
 
 \item{cov12}{Covariance between genetic effect sizes in the two samples. If the effects are fully correlated then cov12<=sqrt(vg1).  If the effects are identical then cov12=vg1 (default).}
 
-\item{fix}{T if the same genetic model is assumed for the training and target samples.}
+\item{fix}{TRUE if the same genetic model is assumed for the training and target samples.}
 
-\item{binary}{T if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
+\item{binary}{TRUE if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
 
 \item{prevalence}{For a binary trait, prevalence in the training sample, By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.}
 
@@ -36,9 +36,9 @@ plotAccuracy(xlim = c(1, 500), ylim = 0, nsnp = 1e+05, vg1 = 0,
 
 \item{r2xy}{Proportion of variance in training trait explained by environmental risk score.}
 
-\item{adjustedEffects}{T if polygenic and envrionmental scores are combined with adjustment for each other.}
+\item{adjustedEffects}{TRUE if polygenic and envrionmental scores are combined with adjustment for each other.}
 
-\item{plot}{T is a new plot is to be drawn, otherwise draw lines on the existing plot.}
+\item{plot}{TRUE is a new plot is to be drawn, otherwise draw lines on the existing plot.}
 
 \item{col}{Colour in which to plot.}
 
@@ -63,7 +63,7 @@ such that the AUC or R2 is maximised.
 }
 \examples{
 # Breast cancer with 90\% null markers, from figure 3 in Dudbridge (2013)
-plotAccuracy(vg1=0.44/2,pi0=0.90,fix=T,binary=T,prevalence=0.036)
+plotAccuracy(vg1=0.44/2,pi0=0.90,fix=TRUE,binary=TRUE,prevalence=0.036)
 }
 \references{
 Dudbridge F (2013) Power and predictive accuracy of polygenic risk scores. PLoS Genet 9:e1003348

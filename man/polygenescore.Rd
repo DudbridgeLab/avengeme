@@ -26,11 +26,11 @@ No default - a value must be given}
 
 \item{pupper}{Vector of p-value thresholds for selecting markers from training sample. First element is the lower bound of the first interval, second element is the upper bound of the first interval, third element is the upper bound of the second interval, etc.}
 
-\item{nested}{T if the p-value intervals are nested, that is they have the same lower bound, which is the first element of pupper. If false, lower bound of the second interval is the upper bound of the first and so on.}
+\item{nested}{TRUE if the p-value intervals are nested, that is they have the same lower bound, which is the first element of pupper. If false, lower bound of the second interval is the upper bound of the first and so on.}
 
-\item{weighted}{T if estimated effect sizes are used as weights in forming the polygenic score. If false, an unweighted score is used, which is the sum of risk alleles carried.}
+\item{weighted}{TRUE if estimated effect sizes are used as weights in forming the polygenic score. If false, an unweighted score is used, which is the sum of risk alleles carried.}
 
-\item{binary}{T if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
+\item{binary}{TRUE if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
 
 \item{prevalence}{For a binary trait, prevalence in the training sample, By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.}
 
@@ -38,9 +38,9 @@ No default - a value must be given}
 
 \item{lambdaS}{Sibling relative recurrence risk in training sample, can be specified instead of vg1.}
 
-\item{shrinkage}{T if effect sizes are to be shrunk to BLUPs.}
+\item{shrinkage}{TRUE if effect sizes are to be shrunk to BLUPs.}
 
-\item{logrisk}{T if binary trait arises from log-risk model rather than liability threshold.}
+\item{logrisk}{TRUE if binary trait arises from log-risk model rather than liability threshold.}
 
 \item{alpha}{Type-1 error for testing association in the target sample.}
 
@@ -50,7 +50,7 @@ No default - a value must be given}
 
 \item{r2xy}{Proportion of variance in training trait explained by environmental risk score.}
 
-\item{adjustedEffects}{T if polygenic and envrionmental scores are combined with adjustment for each other.}
+\item{adjustedEffects}{TRUE if polygenic and envrionmental scores are combined with adjustment for each other.}
 
 \item{riskthresh}{Absolute risk threshold for calculating net reclassification index.}
 }
@@ -87,12 +87,12 @@ association to the target trait, or used to predict individual trait values in t
 \examples{
 # P-value for ISC schizophrenia score associated with schizophrenia in MGS-EA (Purcell et al 2009)
 # See page 3, column 2, paragraph 3 of Dudbridge (2013)
-polygenescore(74062,n=c(3322+3587,2687+2656),vg1=0.269,pi0=0.99,binary=T,sampling=c(3322/6909,2687/5343),pupper=c(0,0.5),prevalence=.01)$p
+polygenescore(74062,n=c(3322+3587,2687+2656),vg1=0.269,pi0=0.99,binary=TRUE,sampling=c(3322/6909,2687/5343),pupper=c(0,0.5),prevalence=.01)$p
 # [1] 1.029771e-28
 
 # Power for ISC schizophrenia score associated with bipolar disorder in WTCCC (Purcell et al, 2009)
 # See page 4, column 2, paragraph 2 of Dudbridge (2013)
-polygenescore(74062,c(3322+3587,1829+2935),vg1=0.287,cov12=0.28*0.287,binary=T,sampling=c(3322/6909,1829/4764),pupper=c(0,0.5),prevalence=.01)$power
+polygenescore(74062,c(3322+3587,1829+2935),vg1=0.287,cov12=0.28*0.287,binary=TRUE,sampling=c(3322/6909,1829/4764),pupper=c(0,0.5),prevalence=.01)$power
 # [1] 0.8042843
 
 # Power for cross validation study of Framingham risk score (Simonsen et al, 2011)
@@ -102,7 +102,7 @@ polygenescore(100000,c(1575,175),vg1=1,pupper=c(0,0.1,0.2,0.3,0.4,0.5),nested=F)
 
 # Net reclassification index for prediction of cardiovascular disease with QRISK-2 and 53 SNPs
 # See table 3, row 1, columns 5-6 of Dudbridge et al (submitted)
-polygenescore(nsnp=1e5,n=63746+130681,vg1=0.3,pi0=0.8,weighted=F,binary=T,sampling=63746/194427,prevalence=0.15,pupper=c(0,5e-8),r2gx=0.3,r2xy=0.052,corgx=0.1,riskthresh=0.1,adjustedEffects=T)$NRI
+polygenescore(nsnp=1e5,n=63746+130681,vg1=0.3,pi0=0.8,weighted=F,binary=TRUE,sampling=63746/194427,prevalence=0.15,pupper=c(0,5e-8),r2gx=0.3,r2xy=0.052,corgx=0.1,riskthresh=0.1,adjustedEffects=TRUE)$NRI
 # [1] -0.006003195  0.015176968  0.009173774
 }
 \references{

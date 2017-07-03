@@ -24,9 +24,9 @@ sampleSizeForGeneScore(targetQuantity, targetValue, nsnp, n2 = NA, vg1 = 0,
 
 \item{pi0}{Proportion of markers with no effect on the training trait.}
 
-\item{weighted}{T if estimated effect sizes are used as weights in forming the polygenic score. If false, an unweighted score is used, which is the sum of risk alleles carried.}
+\item{weighted}{TRUE if estimated effect sizes are used as weights in forming the polygenic score. If false, an unweighted score is used, which is the sum of risk alleles carried.}
 
-\item{binary}{T if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
+\item{binary}{TRUE if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
 
 \item{prevalence}{For a binary trait, prevalence in the training sample, By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.}
 
@@ -34,9 +34,9 @@ sampleSizeForGeneScore(targetQuantity, targetValue, nsnp, n2 = NA, vg1 = 0,
 
 \item{lambdaS}{Sibling relative recurrence risk in training sample, can be specified instead of vg1.}
 
-\item{shrinkage}{T if effect sizes are to be shrunk to BLUPs.}
+\item{shrinkage}{TRUE if effect sizes are to be shrunk to BLUPs.}
 
-\item{logrisk}{T if binary trait arises from log-risk model rather than liability threshold.}
+\item{logrisk}{TRUE if binary trait arises from log-risk model rather than liability threshold.}
 
 \item{alpha}{Type-1 error for testing association in the target sample.}
 
@@ -46,7 +46,7 @@ sampleSizeForGeneScore(targetQuantity, targetValue, nsnp, n2 = NA, vg1 = 0,
 
 \item{r2xy}{Proportion of variance in training trait explained by environmental risk score.}
 
-\item{adjustedEffects}{T if polygenic and envrionmental scores are combined with adjustment for each other.}
+\item{adjustedEffects}{TRUE if polygenic and envrionmental scores are combined with adjustment for each other.}
 }
 \value{
 A list with the following elements:
@@ -65,7 +65,7 @@ the p-value threshold is identified for selecting markers into the polygenic sco
 }
 \examples{
 # AUC= 0.75 in breast cancer.  See Table 4, row 4, column 3 in Dudbridge (2013).
-sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=T,prevalence=0.036,sampling=0.5)
+sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=TRUE,prevalence=0.036,sampling=0.5)
 # $n
 # [1] 313981.4
 #

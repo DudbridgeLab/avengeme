@@ -14,10 +14,10 @@
 #' @param pi0 Proportion of markers with no effect on the training trait.  By default, the proportion is the same for the target trait; otherwise pi0 should be a vector with two elements for the training and target samples respectively.
 #' @param boot Number of bootstrap replicates to estimate approximate confidence intervals. If boot==0 (default), an analytic interval is calculated using profile likelihood.
 #' if boot>0, a bootstrap interval is estimated. These intervals assume that the input P-values are independent; this assumption is generally untrue and the interval will be slightly smaller than it should be.
-#' @param bidirectional T if results are also given when exchanging the role of training and target samples.
+#' @param bidirectional TRUE if results are also given when exchanging the role of training and target samples.
 #' In this case, vg2 can also be estimated, as can pi0 in the target sample. The input vector p should now be twice as long with the list of P-values for training/target followed by the list for target/training.
 #' @param initial Specify starting values for numerical maximisation of the likelihood.  The number of elements must equal the number of estimated parameters, and follows the order vg[1], vg[2], pi0[1], pi0[2], cov12, for those parameters that are actually being estimated.  Default 0.5 for all parameters.
-#' @param fixvg2pi02 T if the same genetic model is assumed for the training and target samples.
+#' @param fixvg2pi02 TRUE if the same genetic model is assumed for the training and target samples.
 #' This fixes the target variance and the covariance to both equal the variance explained in the training sample, vg1. Also fixes the proportion of null markers in the target sample to equal the proportion in the training sample.
 #' @param option Parameter used in method development.  Default 0, fits the model by maximum likelihood for Z statistics.  1 and 2 fit the model by least squares to chisq and Z statistics respectively.  3 fits by maximum likelihood for chisq statistics.
 #' @inheritParams polygenescore
@@ -40,7 +40,7 @@
 #' pupper=c(0,5e-8,1e-6,1e-4,1e-3,0.01,0.05,0.1,0.2,0.5,1)
 #' p=c(9.85087e-24, 4.44037e-36, 2.08048e-71, 8.0594e-103, 2.0587e-138,
 #'     1.4131e-164,5.8954e-166,3.75e-164,7.9488e-159,2.3286e-157)
-#' estimatePolygenicModel(p,103125,c(77195,5120),pupper=pupper,nested=T,binary=T,prevalence=0.01,sampling=c(0.425,0.515),fixvg2pi02=T)
+#' estimatePolygenicModel(p,103125,c(77195,5120),pupper=pupper,nested=TRUE,binary=TRUE,prevalence=0.01,sampling=c(0.425,0.515),fixvg2pi02=TRUE)
 #' # $vg
 #' # [1] 0.2449328 0.2352049 0.2547500
 #' #
@@ -74,7 +74,7 @@
 #' # Perform bidirectional estimation with Z-scores as the first argument
 #' # Small difference from published result due to minor bug fixes
 #' pupper=c(0,.0001,.001,.01,.05,.1,.2,.3,.4,.5,1)
-#' estimatePolygenicModel(sqrt(X2),nsnp=83884,n=c(n1,n2),binary=T,pupper=pupper,prevalence=c(0.01,0.01),sampling=c(p1,p2),bidirectional=T)
+#' estimatePolygenicModel(sqrt(X2),nsnp=83884,n=c(n1,n2),binary=TRUE,pupper=pupper,prevalence=c(0.01,0.01),sampling=c(p1,p2),bidirectional=TRUE)
 #' # $vg
 #' # vg      vgLo      vgHi
 #' # [1,] 0.8800473 0.1784087 0.9999528
