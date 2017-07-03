@@ -1,40 +1,97 @@
-#' Polygenic Score:
-#' Power, area under curve and correlation for estimated gene scores.
+#' Calculate power and predictive accuracy of a polygenic score
 #'
-#' @param nsnp number of independent SNPs in the gene score
-#' @param n vector containing training and target sample sizes
-#' @param vg1 proportion of total variance that is explained by genetic effects in training sample
-#' @param cov12 covariance between genetic effect sizes in the two populations. This must be <=sqrt(vg1) if the genetic effects are fully correlated, set cov12=vg1 or leave unspecified, as this is the default.
-#' @param pi0 proportion of SNPs with no effects on training trait
-#' @param pupper vector of thresholds on p-value for selection from training sample. first element is the lower bound of the first interval, second element is the upper bound of the first interval third element is the upper bound of the second interval, etc
-#' @param nested T if the p-value intervals are nested, ie have the same lower bound if false, lower bound of the 2nd interval = upper bound of the 1st and so on. Default nested=T
-#' @param weighted T if effect sizes used as weights in forming gene score if false, unweighted score is used, ie sum of risk alleles Default nested = T
-#' @param binary T if training trait is binary by default, binary status of the target< trait is the same as the training trait.  If different, make binary into a vector with 2 elements          
-#' @param prevalence disease prevalence in training sample by default, prevalence is the same in the target sample If different, make prevalence a vector with 2 elements
-#' @param sampling case/control sampling fraction in training sample by default, equals the prevalence, as in a cohort study if sampling fraction is different in the target sample, make sampling into a vector with 2 elements
-#' @param lambdaS sibling relative recurrence risk in training sample, can be specified instead of vg1
-#' @param shrinkage T if effect sizes are to be shrunk to BLUPs
-#' @param logrisk T if binary trait arises from log-risk model rather than liability threshold
-#' @param alpha type-1 error for testing association in target sample
+#' \code{polygenescore} calculates measures of association for a polygenic score derived from a training sample
+#' when used to predict traits in a target sample.
+#'
+#' The following setup is assumed. Two independent samples of genotypes are available; this could be
+#' one sample of data split into two subsets.  One sample is termed the training sample, the other the
+#' target sample.  Traits are measured in each sample; different traits could be measured in training and target
+#' samples.  Subjects are assumed to be unrelated, and genotypes assumed to be
+#' independent.  In practice we recommend "LD-clumping" methods, such as the --clump option in
+#' PLINK, to ensure weak dependence between markers; in this case the methods are almost unbiased if an r2
+#' threshold of 0.1 is used. Markers with P-values within a fixed range are selected from the training sample, and
+#' then used to construct a polygenic score for each subject in the target sample.  The score can be tested for
+#' association to the target trait, or used to predict individual trait values in the target sample.
 
-#' @return
+#' @param nsnp Number of independent markers in the polygenic score.
+#' @param n Vector with two elements, giving the total sizes of the training and target samples. In
+#' case/control studies, n is the sum of the number of cases and number of controls. If only
+#' one element of n is given, the training and target samples are assumed to be the same size.
+#' No default - a value must be given
+#' @param vg1 Proportion of variance explained by genetic effects in the training sample.
+#' @param cov12 Covariance between genetic effect sizes in the two samples. If the effects are fully correlated then cov12<=sqrt(vg1).  If the effects are identical then cov12=vg1 (default).
+#' @param pi0 Proportion of markers with no effect on the training trait.
+#' @param pupper Vector of p-value thresholds for selecting markers from training sample. First element is the lower bound of the first interval, second element is the upper bound of the first interval, third element is the upper bound of the second interval, etc.
+#' @param nested T if the p-value intervals are nested, that is they have the same lower bound, which is the first element of pupper. If false, lower bound of the second interval is the upper bound of the first and so on.
+#' @param weighted T if estimated effect sizes are used as weights in forming the polygenic score. If false, an unweighted score is used, which is the sum of risk alleles carried.
+#' @param binary T if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.
+#' @param prevalence For a binary trait, prevalence in the training sample, By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.
+#' @param sampling For a binary trait, case/control sampling fraction in the training sample. By default, sampling equals the prevalence, as in a cohort study.  If the sampling fraction is different in the target sample, sampling should be a vector with two elements for the training and target samples respectively.
+#' @param lambdaS Sibling relative recurrence risk in training sample, can be specified instead of vg1.
+#' @param shrinkage T if effect sizes are to be shrunk to BLUPs.
+#' @param logrisk T if binary trait arises from log-risk model rather than liability threshold.
+#' @param alpha Type-1 error for testing association in the target sample.
+#' @param r2gx Proportion of variance in environmental risk score explained by genetic effects in training sample.
+#' @param corgx Genetic correlation between environmental risk score and training trait.
+#' @param r2xy Proportion of variance in training trait explained by environmental risk score.
+#' @param adjustedEffects T if polygenic and envrionmental scores are combined with adjustment for each other.
+#' @param riskthresh Absolute risk threshold for calculating net reclassification index.
+
+#' @import stats
+
+#' @return A list with elements containing quantities describing the association of the polygenic score with the target trait:
 #' \itemize{
-#'	\item{"R2 = squared correlation between estimated gene score and target trait"}
-#'	\item{"NCP = non-centrality parameter of association test between score and target trait"}
-#'	\item{"p = expected p-value of association test"}
-#'	\item{"power = power of association test"}
-#'	\item{"AUC = for binary traits, area under ROC curve"}
-#'	\item{"MSE = for quantitative traits, mean square error between target trait and estimated gene score"}
-#'	\item{"error = error message, if any"}
+#'	\item{\code{R2} Squared correlation between polygenic score and target trait.}
+#'	\item{\code{NCP} Non-centrality parameter of the chisq test of association between polygenic score and target trait.}
+#'	\item{\code{p} Expected p-value of the chisq test of association between polygenic score and target trait.}
+#'	\item{\code{power} Power of the chisq test of association between polygenic score and target trait.}
+#'	\item{\code{FDR} Expected proportion of false positives among selected markers.}
+#'	\item{\code{AUC} For binary traits, area under ROC curve.}
+#'	\item{\code{MSE} For quantitative traits, mean square error between target trait and polygenic score.}
+#'	\item{\code{NRI} Net reclassification improvement in cases, controls, and combined.}
+#'	\item{\code{IDI} Integrated discrimination improvement.}
+#'	\item{\code{error} Error message, if any.}
 #' }
 
+#' @examples
+#' # P-value for ISC schizophrenia score associated with schizophrenia in MGS-EA (Purcell et al 2009)
+#' # See page 3, column 2, paragraph 3 of Dudbridge (2013)
+#' polygenescore(74062,n=c(3322+3587,2687+2656),vg1=0.269,pi0=0.99,binary=T,sampling=c(3322/6909,2687/5343),pupper=c(0,0.5),prevalence=.01)$p
+#' # [1] 1.029771e-28
+#'
+#' # Power for ISC schizophrenia score associated with bipolar disorder in WTCCC (Purcell et al, 2009)
+#' # See page 4, column 2, paragraph 2 of Dudbridge (2013)
+#' polygenescore(74062,c(3322+3587,1829+2935),vg1=0.287,cov12=0.28*0.287,binary=T,sampling=c(3322/6909,1829/4764),pupper=c(0,0.5),prevalence=.01)$power
+#' # [1] 0.8042843
+#'
+#' # Power for cross validation study of Framingham risk score (Simonsen et al, 2011)
+#' # See page 6, column 1, paragraph 1 of Dudbridge (2013)
+#' polygenescore(100000,c(1575,175),vg1=1,pupper=c(0,0.1,0.2,0.3,0.4,0.5),nested=F)$power
+#' # [1] 0.19723400 0.11733175 0.09195134 0.07733049 0.06771049
+#'
+#' # Net reclassification index for prediction of cardiovascular disease with QRISK-2 and 53 SNPs
+#' # See table 3, row 1, columns 5-6 of Dudbridge et al (submitted)
+#' polygenescore(nsnp=1e5,n=63746+130681,vg1=0.3,pi0=0.8,weighted=F,binary=T,sampling=63746/194427,prevalence=0.15,pupper=c(0,5e-8),r2gx=0.3,r2xy=0.052,corgx=0.1,riskthresh=0.1,adjustedEffects=T)$NRI
+#' # [1] -0.006003195  0.015176968  0.009173774
+
+#' @author Frank Dudbridge
+
+#' @references
+#' Dudbridge F (2013) Power and predictive accuracy of polygenic risk scores. PLoS Genet 9:e1003348
+#' @references
+#' Dudbridge F, Pashayan N, Yang J.  Predictive accuracy of combined genetic and environmental risk scores.  Submitted.
+#' @references
+#' Purcell SM et al (2009) Common polygenic variation contributes to risk of schizophrenia and bipolar disorder. Nature 460:748-52
+#' @references
+#' Simonsen MA et al (2011) Recent methods for polygenic analysis of genome-wide data implicate an important effect of common variants on cardiovascular disease risk. BMC Med Genet 12:146
+#' @export
 polygenescore=function(nsnp,
                        n,
                        vg1=0,
                        cov12=vg1,
                        pi0=0,
                        pupper=c(0,1),
-		       nested=T,
+		            nested=T,
                        weighted=T,
                        binary=c(F,F),
                        prevalence=c(0.1,0.1),
@@ -42,7 +99,12 @@ polygenescore=function(nsnp,
                        lambdaS=NA,
                        shrinkage=F,
                        logrisk=F,
-                       alpha=0.05) {
+                       alpha=0.05,
+		            r2gx=0,
+		            corgx=0,
+		            r2xy=0,
+  		 		 adjustedEffects=F,
+		     		 riskthresh=0.1) {
 
 errorMsg=""
 if (min(pupper)<0 | max(pupper)>1)
@@ -54,6 +116,11 @@ if (length(n)==1) n=rep(n,2)
 if (length(binary)==1) binary=rep(binary,2)
 if (length(prevalence)==1) prevalence=rep(prevalence,2)
 if (length(sampling)==1) sampling=rep(sampling,2)
+
+# if including environmental score, force the target trait to be the same as training trait
+if (r2xy>0) {
+  binary=rep(binary[1],2)
+}
 
 # variance of the phenotype
 varY1 = 1
@@ -82,9 +149,14 @@ if (!is.na(lambdaS)) {
   }
 }
 
+# covariance of gene score with X
+  covgx = corgx*sqrt(vg1*r2gx*r2xy)
+
 # variance of nonzero betas
 betaVar = vg1/(nsnp*(1-pi0))
-betaCov = cov12/(nsnp*(1-pi0))
+if (r2xy==0) betaCov = cov12/(nsnp*(1-pi0))
+else betaCov = betaVar
+betaCovX = covgx/(nsnp*(1-pi0))
 
 # transform from liability scale to observed scale
 if (logrisk) {
@@ -97,6 +169,7 @@ else {
 if (binary[1]) betaVar = betaVar*liab2obs[1]^2
 if (binary[1]) betaCov = betaCov*liab2obs[1]
 if (binary[2]) betaCov = betaCov*liab2obs[2]
+if (binary[1]) betaCovX = betaCovX*liab2obs[1]^2
 
 shrink=1
 if (shrinkage) {
@@ -151,7 +224,7 @@ MSE=c()
 
 # covariance between Y2 and estimated gene score
   if (weighted) {
-# regression coefficient in SNPs with effects on both traits
+# regression coefficient in SNPs with effects on training trait
     scoreCovariance = betaCov/(betaVar+samplingVar)
 # covariance in SNPs with effects
     scoreCovariance = scoreCovariance*varBetaHat*probTruncBeta
@@ -164,16 +237,62 @@ MSE=c()
     }
   }
 
+# covariance between environmental score and estimated gene score
+  if (weighted) {
+# regression coefficient in SNPs with effects on X
+    scoreCovarianceX = betaCovX/(betaVar+samplingVar)
+# covariance in SNPs with effects
+    scoreCovarianceX = scoreCovarianceX*varBetaHat*probTruncBeta
+  }
+  else {
+    scoreCovarianceX=rep(0,length(plower))
+    for(i in 1:length(plower)) {
+      scoreCovarianceX[i] = 2*betaCovX/betaVar*(1-pi0)*nsnp*
+        integrate(discordantSign,0,Inf,sqrt(betaVar),betaHatThreshLo[i],betaHatThreshHi[i],sqrt(samplingVar),abs.tol=1e-12,stop.on.error=F)$value
+    }
+  }
+
+# add in effect of environmental risk score
+  if (r2xy>0) {
+    if (r2gx>1 | r2gx<0) {
+      mynan=rep(NaN,length(plower))
+      return(list(error="r2gx should be between 0 and 1"))
+    }
+
+    cbeta=c(1,1)
+    if (adjustedEffects) {
+      sigma=matrix(c(1,scoreCovarianceX/r2xy,scoreCovarianceX/varGeneScoreHat,1),nrow=2)
+      if (binary[1]) sigma[2,1]=sigma[2,1]/liab2obs[1]^2
+      cbeta=solve(sigma)%*%c(scoreCovariance/varGeneScoreHat,1)
+    }
+    scoreCovariance = cbeta[1]*scoreCovariance+cbeta[2]*r2xy
+    if (binary[1] && binary[2]) scoreCovariance = scoreCovariance+cbeta[2]*r2xy*(liab2obs[1]*liab2obs[2]-1)
+    if (binary[1] && !binary[2]) scoreCovariance = scoreCovariance+cbeta[2]*r2xy*(liab2obs[1]-1)
+    if (!binary[1] && binary[2]) scoreCovariance = scoreCovariance+cbeta[2]*r2xy*(liab2obs[2]-1)
+    varGeneScoreHat = cbeta[1]^2*varGeneScoreHat+cbeta[2]^2*r2xy+2*cbeta[1]*cbeta[2]*scoreCovarianceX
+    if (binary[1]) varGeneScoreHat = varGeneScoreHat+cbeta[2]^2*r2xy*(liab2obs[1]^2-1)
+  }
+
+
 # Coefficient of determination!
   R2 = scoreCovariance^2/varGeneScoreHat/varY2
+
 # catch impossible configurations
-  if (is.nan(max(R2)) | max(R2)>1 | vg1>0 & abs(cov12)/sqrt(vg1)>1) {
-    mynan=rep(NaN,length(plower))
-    return(list(R2=mynan,NCP=mynan,p=mynan,power=mynan,AUC=mynan,MSE=mynan,error="cov12 incompatible with vg1"))
+# disabled for now
+  if (FALSE) {
+    if (is.nan(max(R2)) | max(R2)>1 | vg1>0 & abs(cov12)/sqrt(vg1)>1) {
+      mynan=rep(NaN,length(plower))
+      return(list(R2=mynan,NCP=mynan,p=mynan,power=mynan,AUC=mynan,MSE=mynan,error="cov12 incompatible with vg1"))
+    }
   }
 
 # Non-centrality parameter!
   NCP=n[2]*R2/(1-R2)
+  if (max(R2)>=1) {
+    NCP[R2>=1]=1e10
+    errorMsg="Warning: R2>=1 on observed scale"
+  }
+
 # Power!
   power=pchisq(qchisq(1-alpha,1),1,lower=F,ncp=NCP)
 
@@ -204,16 +323,100 @@ MSE=c()
   }
 
 # R2 on liability scale for binary traits
-  if (binary[2]) R2 = R2/liab2obs[2]^2*sampling[2]*(1-sampling[2])
+  if (binary[2]) R2 = R2*varY2/liab2obs[2]^2
 
-return(list(R2=R2,NCP=NCP,p=pchisq(NCP+1,1,lower=F),power=power,AUC=AUC,MSE=MSE,error=""))
+# net reclassifation improvement!
+  if (r2xy>0 & binary[1]) {
+# risk thresholds for existing (X) and new (S) scores
+    if (logrisk) {
+      nriThreshS=log(riskthresh)
+      nriThreshX=log(riskthresh)
+    }
+    else {
+      nriThreshS=qnorm(riskthresh,sd=sqrt(1-R2))-qnorm(prevalence[2])
+      nriThreshX=qnorm(riskthresh,sd=sqrt(1-r2xy))-qnorm(prevalence[2])
+    }
+
+# covariance on risk/liability scale between existing and new scores
+    covXS = (cbeta[1]*scoreCovarianceX/liab2obs[2]^2+cbeta[2]*r2xy)
+
+# NRI elements
+    if (logrisk) {
+      mu = c(log(prevalence[2])-varGeneScoreHat/liab2obs[2]^2/2,log(prevalence[2])-r2xy/2)
+      # integrated discrimination improvement
+      IDI = exp(mu[1]+varGeneScoreHat/liab2obs[2]^2*3/2)-exp(mu[2]+r2xy*3/2)-exp(mu[1]+varGeneScoreHat/liab2obs[2]^2/2)+exp(mu[2]+r2xy/2)
+      if (riskthresh==0) { # continuous NRI
+        case10 = 2*pnorm(0,mean=mu[2]+r2xy-mu[1]-varGeneScoreHat/liab2obs[2]^2,sd=sqrt(varGeneScoreHat/liab2obs[2]^2+r2xy-2*covXS))-1
+	case01 = 0
+	control10 = 2*pnorm(0,mean=mu[1]-mu[2],sd=sqrt(varGeneScoreHat/liab2obs[2]^2+r2xy-2*covXS))-1
+	control01 = 0
+      }
+      else { # threshold NRI
+        sigma = rbind(c(varGeneScoreHat/liab2obs[2]^2,covXS),c(covXS,r2xy))
+        case10 = mvtnorm::pmvnorm(lower=c(nriThreshS,-Inf),upper=c(Inf,nriThreshX),mean=mu+c(varGeneScoreHat/liab2obs[2]^2,r2xy),sigma=sigma)
+        case01 = mvtnorm::pmvnorm(lower=c(-Inf,nriThreshX),upper=c(nriThreshS,Inf),mean=mu+c(varGeneScoreHat/liab2obs[2]^2,r2xy),sigma=sigma)
+        control10 = mvtnorm::pmvnorm(lower=c(-Inf,nriThreshX),upper=c(nriThreshS,Inf),mean=mu,sigma=sigma)
+        control01 = mvtnorm::pmvnorm(lower=c(nriThreshS,-Inf),upper=c(Inf,nriThreshX),mean=mu,sigma=sigma)
+      }
+    }
+    else {
+      diseasethresh=qnorm(prevalence[2],lower=F)
+      # integrated discrimination improvement
+      thresholdDensity = dnorm(qnorm(prevalence[2]))/prevalence[2]
+      oldCaseMean = thresholdDensity*r2xy
+      oldCaseVariance = r2xy*(1-oldCaseMean*(thresholdDensity+qnorm(prevalence[2])))
+      thresholdDensity = dnorm(qnorm(prevalence[2]))/(1-prevalence[2])
+      oldControlMean = -thresholdDensity*r2xy
+      oldControlVariance = r2xy*(1+oldControlMean*(thresholdDensity-qnorm(prevalence[2])))
+      # approx IDI: risk of the expected liability
+      #IDI = pnorm(diseasethresh,caseMean,sd=sqrt(1-caseVariance),lower=F)
+      #IDI = IDI - pnorm(diseasethresh,oldCaseMean,sd=sqrt(1-oldCaseVariance),lower=F)
+      #IDI = IDI - pnorm(diseasethresh,controlMean,sd=sqrt(1-controlVariance),lower=F)
+      #IDI = IDI + pnorm(diseasethresh,oldControlMean,sd=sqrt(1-oldControlVariance),lower=F)
+      #
+      # exact IDI: expected risk of the liability
+      risk=function(l) {
+        pnorm(diseasethresh,l,sqrt(1-r2xy))*(dnorm(l,oldCaseMean,sqrt(oldCaseVariance))-
+                                             dnorm(l,oldControlMean,sqrt(oldControlVariance)))-
+        pnorm(diseasethresh,l,sqrt(1-R2))*(dnorm(l,caseMean,sqrt(caseVariance))-
+                                           dnorm(l,controlMean,sqrt(controlVariance)))
+      }
+      IDI = integrate(risk,-Inf,Inf)$value
+      gamma = sqrt(R2/varGeneScoreHat*liab2obs[2]^2)
+      if (riskthresh==0) { #continuous NRI
+        sigma = rbind(c(1,R2-r2xy),c(R2-r2xy,R2+r2xy-2*gamma*covXS))
+        case10 = 2*mvtnorm::pmvnorm(lower=c(qnorm(prevalence[2],lower=F),0),upper=c(Inf,Inf),sigma=sigma)/prevalence[2]-1
+     	  case01 = 0
+	  control10 = 2*mvtnorm::pmvnorm(lower=c(-Inf,-Inf),upper=c(qnorm(prevalence[2],lower=F),0),sigma=sigma)/(1-prevalence[2])-1
+	  control01 = 0
+      }
+      else { # threshold NRI
+        sigma = rbind(c(1,R2,r2xy),c(R2,R2,gamma*covXS),c(r2xy,gamma*covXS,r2xy))
+        case10 = mvtnorm::pmvnorm(lower=c(qnorm(prevalence[2],lower=F),nriThreshS,-Inf),upper=c(Inf,Inf,nriThreshX),sigma=sigma)/prevalence[2]
+        case01 = mvtnorm::pmvnorm(lower=c(qnorm(prevalence[2],lower=F),-Inf,nriThreshX),upper=c(Inf,nriThreshS,Inf),sigma=sigma)/prevalence[2]
+        control10 = mvtnorm::pmvnorm(lower=c(-Inf,-Inf,nriThreshX),upper=c(qnorm(prevalence[2],lower=F),nriThreshS,Inf),sigma=sigma)/(1-prevalence[2])
+        control01 = mvtnorm::pmvnorm(lower=c(-Inf,nriThreshS,-Inf),upper=c(qnorm(prevalence[2],lower=F),Inf,nriThreshX),sigma=sigma)/(1-prevalence[2])
+      }
+    }
+
+    NRIcase = as.numeric(case10-case01)
+    NRIcontrol = as.numeric(control10-control01)
+  }
+
+  else {
+    NRIcase = NULL
+    NRIcontrol = NULL
+    IDI = NULL
+  }
+
+return(list(R2=R2,NCP=NCP,p=pchisq(NCP+1,1,lower=F),power=power,FDR=probTruncNull/(probTruncBeta+probTruncNull),AUC=AUC,MSE=MSE,NRI=c(NRIcase,NRIcontrol,NRIcase+NRIcontrol),IDI=IDI,error=errorMsg))
 }
 
 # numerical integration in covariance for unweighted score
 discordantSign=function(x,xsigma,threshLo,threshHi,asigma) {
   x*dnorm(x,sd=xsigma)*
   (pnorm(threshLo,mean=x,sd=asigma)-pnorm(threshHi,mean=x,sd=asigma)-pnorm(-threshHi,mean=x,sd=asigma)+pnorm(-threshLo,mean=x,sd=asigma))
-  
+
 }
 #########
 #end of polygenescore

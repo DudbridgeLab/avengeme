@@ -2,32 +2,153 @@
 % Please edit documentation in R/estimatePolygenicModel.R
 \name{estimatePolygenicModel}
 \alias{estimatePolygenicModel}
-\title{Estimate Polygenic Model 
-Estimate parameters of genetic model from a set of p-values for the polygenic score tested in the target sample each p-value corresponds to a polygenic score constructed from SNPs whose p-values in the training data are in a given interval possible parameters to estimate are vg1, cov12, vg2, pi01, pi02, in any combination a parameter will be estimated if its input value is unspecified or NA.}
+\title{Estimate polygenic model}
 \usage{
 estimatePolygenicModel(p, nsnp, n, vg = c(NA, NA), cov12 = NA, pi0 = c(NA,
   NA), pupper = 1, nested = T, weighted = T, binary = c(F, F),
   prevalence = c(0.1, 0.1), sampling = prevalence, lambdaS = c(NA, NA),
-  shrinkage = F, logrisk = F, alpha = 0.05, option = 0, boot = 0,
-  bidirectional = F, initial = c(), fixvg2pi02 = F)
+  shrinkage = F, logrisk = F, option = 0, boot = 0, bidirectional = F,
+  initial = c(), fixvg2pi02 = F)
 }
 \arguments{
-\item{p}{vector of p-values (or Z statistics) for polygenic scores tested in the target data automatically detects Z statistics if some entries of p are greater than 1}
+\item{p}{Vector of P-values or Z-statistics for polygenic scores tested in the target data. Automatically detects Z-statistics if some entries of p are greater than 1 or less than 0.}
 
-\item{vg}{proportion of total variance that is explained by genetic effects in training sample by default, the variance is the same for the target sample to specify a different variance, make vg a 2-element vector}
+\item{nsnp}{Number of independent markers in the polygenic score.}
 
-\item{cov12}{covariance between genetic effect sizes in the two populations}
+\item{n}{Vector with two elements, giving the total sizes of the training and target samples. In
+case/control studies, n is the sum of the number of cases and number of controls. If only
+one element of n is given, the training and target samples are assumed to be the same size.
+No default - a value must be given}
 
-\item{pi0}{proportion of SNPs with no effects on training trait by default, the proportion is the same for the target trait to specify a different proportion, make pi0 a 2-element vector}
+\item{vg}{Proportion of variance explained by genetic effects in training sample. By default, the variance explained is the same in the target sample; otherwise vg should be a vector with two elements for the training and target samples respectively.}
 
-\item{boot}{number of bootstrap replicates to estimate approximate confidence interval if boot==0 (default), an analytic interval is calculated using profile likelihood if boot>0, a bootstrap interval is given these intervals assume that the input p-values are independent this assumption is generally untrue and the interval will be slightly smaller than it should be}
+\item{cov12}{Covariance between genetic effect sizes in the two samples. If the effects are fully correlated then cov12<=sqrt(vg1).  If the effects are identical then cov12=vg1 (default).}
 
-\item{bidirectional}{T if results are also given when exchanging the training and target samples in this case, vg2 can also be estimated, as can pi0 in the target sample in this case, input vector p should be twice as long with the list of p-values for training/target followed by the list for target/training}
+\item{pi0}{Proportion of markers with no effect on the training trait.  By default, the proportion is the same for the target trait; otherwise pi0 should be a vector with two elements for the training and target samples respectively.}
 
-\item{fixvg2pi02}{T if the same genetic model is assumed for the training and target samples this fixes the target variance and the covariance to both equal the variance in the training sample also fixes the proportion of null SNPs in the target sample to equal the proportion in the training sample other parameters as in polygenescore}
+\item{pupper}{Vector of p-value thresholds for selecting markers from training sample. First element is the lower bound of the first interval, second element is the upper bound of the first interval, third element is the upper bound of the second interval, etc.}
+
+\item{nested}{T if the p-value intervals are nested, that is they have the same lower bound, which is the first element of pupper. If false, lower bound of the second interval is the upper bound of the first and so on.}
+
+\item{weighted}{T if estimated effect sizes are used as weights in forming the polygenic score. If false, an unweighted score is used, which is the sum of risk alleles carried.}
+
+\item{binary}{T if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
+
+\item{prevalence}{For a binary trait, prevalence in the training sample, By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.}
+
+\item{sampling}{For a binary trait, case/control sampling fraction in the training sample. By default, sampling equals the prevalence, as in a cohort study.  If the sampling fraction is different in the target sample, sampling should be a vector with two elements for the training and target samples respectively.}
+
+\item{lambdaS}{Sibling relative recurrence risk in training sample, can be specified instead of vg1.}
+
+\item{shrinkage}{T if effect sizes are to be shrunk to BLUPs.}
+
+\item{logrisk}{T if binary trait arises from log-risk model rather than liability threshold.}
+
+\item{option}{Parameter used in method development.  Default 0, fits the model by maximum likelihood for Z statistics.  1 and 2 fit the model by least squares to chisq and Z statistics respectively.  3 fits by maximum likelihood for chisq statistics.}
+
+\item{boot}{Number of bootstrap replicates to estimate approximate confidence intervals. If boot==0 (default), an analytic interval is calculated using profile likelihood.
+if boot>0, a bootstrap interval is estimated. These intervals assume that the input P-values are independent; this assumption is generally untrue and the interval will be slightly smaller than it should be.}
+
+\item{bidirectional}{T if results are also given when exchanging the role of training and target samples.
+In this case, vg2 can also be estimated, as can pi0 in the target sample. The input vector p should now be twice as long with the list of P-values for training/target followed by the list for target/training.}
+
+\item{initial}{Specify starting values for numerical maximisation of the likelihood.  The number of elements must equal the number of estimated parameters, and follows the order vg[1], vg[2], pi0[1], pi0[2], cov12, for those parameters that are actually being estimated.  Default 0.5 for all parameters.}
+
+\item{fixvg2pi02}{T if the same genetic model is assumed for the training and target samples.
+This fixes the target variance and the covariance to both equal the variance explained in the training sample, vg1. Also fixes the proportion of null markers in the target sample to equal the proportion in the training sample.}
+}
+\value{
+A list with elements corresponding to the estimated genetic model.
+Values fixed at input are returned unchanged with a degenerate confidence interval.
+Each element is a vector consisting of the point estimate followed by its lower and upper 95\% confidence limit.
+\itemize{
+\item{\code{vg} Variance explained in the target trait.  If bidirectional estimation is selected, \code{vg} is a matrix with two rows corresponding to the training and target samples respectively.}
+\item{\code{cov12} Covariance between genetic effects in the two samples.}
+\item{\code{pi0} Proportion of markers with no effect on the training trait. If bidirectional estimation is selected, \code{pi0} is a matrix with two rows corresponding to the training and target samples respectively.}
+\item{\code{logLikelihood} Maximised log-likelihood at the fitted model.}
+\item{\code{error} Error message, if any}
+}
 }
 \description{
-Estimate Polygenic Model 
-Estimate parameters of genetic model from a set of p-values for the polygenic score tested in the target sample each p-value corresponds to a polygenic score constructed from SNPs whose p-values in the training data are in a given interval possible parameters to estimate are vg1, cov12, vg2, pi01, pi02, in any combination a parameter will be estimated if its input value is unspecified or NA.
+\code{estimatePolygenicModel} estimates the parameters of an underlying genetic model from the results of association tests of a polygenic score.
 }
+\details{
+The input is a vector of P-values or (signed) Z-statistics from the association test of the polygenic score in the target sample.
+P-values are assumed if all the values are in (0,1), otherwise Z-statistics are assumed.
+Each P-value corresponds to the association test of a polygenic score consisting of SNPs with training sample P-values in a specific interval.
+Up to five parameters can be estimated: vg[1], cov12, vg[2], pi0[1], pi0[2].
+The number of input P-values must be greater than or equal to the number of estimated parameters, otherwise an error message is returned.
+Any combination of parameters can be estimated.  A parameter will be estimated if its input value is unspecified or \code{NA}.
+}
+\examples{
+# Schizophrenia PGC2 study, rightmost column of table 5 in Palla & Dudbridge (2015)
+# P-values from supplementary table 6 of Schizophrenia Working Group (2014)
+# Other parameters as in table 1 of Palla & Dudbridge (2015)
+pupper=c(0,5e-8,1e-6,1e-4,1e-3,0.01,0.05,0.1,0.2,0.5,1)
+p=c(9.85087e-24, 4.44037e-36, 2.08048e-71, 8.0594e-103, 2.0587e-138,
+    1.4131e-164,5.8954e-166,3.75e-164,7.9488e-159,2.3286e-157)
+estimatePolygenicModel(p,103125,c(77195,5120),pupper=pupper,nested=T,binary=T,prevalence=0.01,sampling=c(0.425,0.515),fixvg2pi02=T)
+# $vg
+# [1] 0.2449328 0.2352049 0.2547500
+#
+# $cov12
+# [1] 0.2449328 0.2352049 0.2547500
+#
+# $pi0
+# [1] 0.8520102 0.8354152 0.8669681
+#
+# $logLikelihood
+# [1] 30.1139
+#
+# $error
+# [1] ""
 
+# Genetic covariance between bipolar disorder and schizophrenia, table 6 in Palla & Dudbridge (2015)
+# Nagelkerke R2 SCZ-BPD from table S5 of Cross Disorder Group (2013)
+R2N=c(.0044,.0065,.015,.023,.024,.025,.024,.024,.025,.025)
+n1=11922
+p1=6664/n1 # sampling fraction
+# Convert to observed scale R2
+R2O=R2N*(1-p1^(2*p1)*(1-p1)^(2*(1-p1)))
+# Convert to chisq statistics
+X2=n*R2O/(1-R2O)
+# Now the same for BPD-SCZ
+R2N=c(0.002,0.0048,0.012,0.017,0.021,0.021,0.022,0.021,0.021,0.021)
+n2=17012
+p2=9032/n2
+R2O=R2N*(1-p2^(2*p2)*(1-p2)^(2*(1-p2)))
+X2=c(n2*R2O/(1-R2O),X2)
+# Perform bidirectional estimation with Z-scores as the first argument
+# Small difference from published result due to minor bug fixes
+pupper=c(0,.0001,.001,.01,.05,.1,.2,.3,.4,.5,1)
+estimatePolygenicModel(sqrt(X2),nsnp=83884,n=c(n1,n2),binary=T,pupper=pupper,prevalence=c(0.01,0.01),sampling=c(p1,p2),bidirectional=T)
+# $vg
+# vg      vgLo      vgHi
+# [1,] 0.8800473 0.1784087 0.9999528
+# [2,] 0.6339373 0.1258082 0.9999382
+#
+# $cov12
+# [1] 0.2092269 0.1895850 0.2226666
+#
+# $pi0
+# pi0     pi0Lo     pi0Hi
+# [1,] 0.7297216 0.6453690 0.9138123
+# [2,] 0.7237033 0.5936525 0.9127537
+#
+# $logLikelihood
+# [1] 19.55162
+#
+# $error
+# [1] ""
+
+}
+\references{
+Palla L and Dudbridge F (2015) A fast method using polygenic scores to estimate the variance explained by genome-wide marker panels and the proportion of variants affecting a trait. Am J Hum Genet 97:250-259
+
+Schizophrenia Working Group of the Psychiatric Genomics Consoritum (2014) Biological insights from 108 schizophrenia-associated genetic loci.  Nature 511:421-427
+
+Cross Disorder Group of the Psychiatric Genomics Consortium (2013) dentification of risk loci with shared effects on five major psychiatric disorders: a genome-wide analysis.  Lancet 381:1371-1379
+}
+\author{
+Frank Dudbridge
+}

@@ -2,58 +2,118 @@
 % Please edit documentation in R/polygenescore.R
 \name{polygenescore}
 \alias{polygenescore}
-\title{Polygenic Score:
-Power, area under curve and correlation for estimated gene scores.}
+\title{Calculate power and predictive accuracy of a polygenic score}
 \usage{
 polygenescore(nsnp, n, vg1 = 0, cov12 = vg1, pi0 = 0, pupper = c(0, 1),
   nested = T, weighted = T, binary = c(F, F), prevalence = c(0.1, 0.1),
   sampling = prevalence, lambdaS = NA, shrinkage = F, logrisk = F,
-  alpha = 0.05)
+  alpha = 0.05, r2gx = 0, corgx = 0, r2xy = 0, adjustedEffects = F,
+  riskthresh = 0.1)
 }
 \arguments{
-\item{nsnp}{number of independent SNPs in the gene score}
+\item{nsnp}{Number of independent markers in the polygenic score.}
 
-\item{n}{vector containing training and target sample sizes}
+\item{n}{Vector with two elements, giving the total sizes of the training and target samples. In
+case/control studies, n is the sum of the number of cases and number of controls. If only
+one element of n is given, the training and target samples are assumed to be the same size.
+No default - a value must be given}
 
-\item{vg1}{proportion of total variance that is explained by genetic effects in training sample}
+\item{vg1}{Proportion of variance explained by genetic effects in the training sample.}
 
-\item{cov12}{covariance between genetic effect sizes in the two populations. This must be <=sqrt(vg1) if the genetic effects are fully correlated, set cov12=vg1 or leave unspecified, as this is the default.}
+\item{cov12}{Covariance between genetic effect sizes in the two samples. If the effects are fully correlated then cov12<=sqrt(vg1).  If the effects are identical then cov12=vg1 (default).}
 
-\item{pi0}{proportion of SNPs with no effects on training trait}
+\item{pi0}{Proportion of markers with no effect on the training trait.}
 
-\item{pupper}{vector of thresholds on p-value for selection from training sample. first element is the lower bound of the first interval, second element is the upper bound of the first interval third element is the upper bound of the second interval, etc}
+\item{pupper}{Vector of p-value thresholds for selecting markers from training sample. First element is the lower bound of the first interval, second element is the upper bound of the first interval, third element is the upper bound of the second interval, etc.}
 
-\item{nested}{T if the p-value intervals are nested, ie have the same lower bound if false, lower bound of the 2nd interval = upper bound of the 1st and so on. Default nested=T}
+\item{nested}{T if the p-value intervals are nested, that is they have the same lower bound, which is the first element of pupper. If false, lower bound of the second interval is the upper bound of the first and so on.}
 
-\item{weighted}{T if effect sizes used as weights in forming gene score if false, unweighted score is used, ie sum of risk alleles Default nested = T}
+\item{weighted}{T if estimated effect sizes are used as weights in forming the polygenic score. If false, an unweighted score is used, which is the sum of risk alleles carried.}
 
-\item{binary}{T if training trait is binary by default, binary status of the target< trait is the same as the training trait.  If different, make binary into a vector with 2 elements}
+\item{binary}{T if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
 
-\item{prevalence}{disease prevalence in training sample by default, prevalence is the same in the target sample If different, make prevalence a vector with 2 elements}
+\item{prevalence}{For a binary trait, prevalence in the training sample, By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.}
 
-\item{sampling}{case/control sampling fraction in training sample by default, equals the prevalence, as in a cohort study if sampling fraction is different in the target sample, make sampling into a vector with 2 elements}
+\item{sampling}{For a binary trait, case/control sampling fraction in the training sample. By default, sampling equals the prevalence, as in a cohort study.  If the sampling fraction is different in the target sample, sampling should be a vector with two elements for the training and target samples respectively.}
 
-\item{lambdaS}{sibling relative recurrence risk in training sample, can be specified instead of vg1}
+\item{lambdaS}{Sibling relative recurrence risk in training sample, can be specified instead of vg1.}
 
-\item{shrinkage}{T if effect sizes are to be shrunk to BLUPs}
+\item{shrinkage}{T if effect sizes are to be shrunk to BLUPs.}
 
-\item{logrisk}{T if binary trait arises from log-risk model rather than liability threshold}
+\item{logrisk}{T if binary trait arises from log-risk model rather than liability threshold.}
 
-\item{alpha}{type-1 error for testing association in target sample}
+\item{alpha}{Type-1 error for testing association in the target sample.}
+
+\item{r2gx}{Proportion of variance in environmental risk score explained by genetic effects in training sample.}
+
+\item{corgx}{Genetic correlation between environmental risk score and training trait.}
+
+\item{r2xy}{Proportion of variance in training trait explained by environmental risk score.}
+
+\item{adjustedEffects}{T if polygenic and envrionmental scores are combined with adjustment for each other.}
+
+\item{riskthresh}{Absolute risk threshold for calculating net reclassification index.}
 }
 \value{
+A list with elements containing quantities describing the association of the polygenic score with the target trait:
 \itemize{
-\item{"R2 = squared correlation between estimated gene score and target trait"}
-\item{"NCP = non-centrality parameter of association test between score and target trait"}
-\item{"p = expected p-value of association test"}
-\item{"power = power of association test"}
-\item{"AUC = for binary traits, area under ROC curve"}
-\item{"MSE = for quantitative traits, mean square error between target trait and estimated gene score"}
-\item{"error = error message, if any"}
+\item{\code{R2} Squared correlation between polygenic score and target trait.}
+\item{\code{NCP} Non-centrality parameter of the chisq test of association between polygenic score and target trait.}
+\item{\code{p} Expected p-value of the chisq test of association between polygenic score and target trait.}
+\item{\code{power} Power of the chisq test of association between polygenic score and target trait.}
+\item{\code{FDR} Expected proportion of false positives among selected markers.}
+\item{\code{AUC} For binary traits, area under ROC curve.}
+\item{\code{MSE} For quantitative traits, mean square error between target trait and polygenic score.}
+\item{\code{NRI} Net reclassification improvement in cases, controls, and combined.}
+\item{\code{IDI} Integrated discrimination improvement.}
+\item{\code{error} Error message, if any.}
 }
 }
 \description{
-Polygenic Score:
-Power, area under curve and correlation for estimated gene scores.
+\code{polygenescore} calculates measures of association for a polygenic score derived from a training sample
+when used to predict traits in a target sample.
 }
+\details{
+The following setup is assumed. Two independent samples of genotypes are available; this could be
+one sample of data split into two subsets.  One sample is termed the training sample, the other the
+target sample.  Traits are measured in each sample; different traits could be measured in training and target
+samples.  Subjects are assumed to be unrelated, and genotypes assumed to be
+independent.  In practice we recommend "LD-clumping" methods, such as the --clump option in
+PLINK, to ensure weak dependence between markers; in this case the methods are almost unbiased if an r2
+threshold of 0.1 is used. Markers with P-values within a fixed range are selected from the training sample, and
+then used to construct a polygenic score for each subject in the target sample.  The score can be tested for
+association to the target trait, or used to predict individual trait values in the target sample.
+}
+\examples{
+# P-value for ISC schizophrenia score associated with schizophrenia in MGS-EA (Purcell et al 2009)
+# See page 3, column 2, paragraph 3 of Dudbridge (2013)
+polygenescore(74062,n=c(3322+3587,2687+2656),vg1=0.269,pi0=0.99,binary=T,sampling=c(3322/6909,2687/5343),pupper=c(0,0.5),prevalence=.01)$p
+# [1] 1.029771e-28
 
+# Power for ISC schizophrenia score associated with bipolar disorder in WTCCC (Purcell et al, 2009)
+# See page 4, column 2, paragraph 2 of Dudbridge (2013)
+polygenescore(74062,c(3322+3587,1829+2935),vg1=0.287,cov12=0.28*0.287,binary=T,sampling=c(3322/6909,1829/4764),pupper=c(0,0.5),prevalence=.01)$power
+# [1] 0.8042843
+
+# Power for cross validation study of Framingham risk score (Simonsen et al, 2011)
+# See page 6, column 1, paragraph 1 of Dudbridge (2013)
+polygenescore(100000,c(1575,175),vg1=1,pupper=c(0,0.1,0.2,0.3,0.4,0.5),nested=F)$power
+# [1] 0.19723400 0.11733175 0.09195134 0.07733049 0.06771049
+
+# Net reclassification index for prediction of cardiovascular disease with QRISK-2 and 53 SNPs
+# See table 3, row 1, columns 5-6 of Dudbridge et al (submitted)
+polygenescore(nsnp=1e5,n=63746+130681,vg1=0.3,pi0=0.8,weighted=F,binary=T,sampling=63746/194427,prevalence=0.15,pupper=c(0,5e-8),r2gx=0.3,r2xy=0.052,corgx=0.1,riskthresh=0.1,adjustedEffects=T)$NRI
+# [1] -0.006003195  0.015176968  0.009173774
+}
+\references{
+Dudbridge F (2013) Power and predictive accuracy of polygenic risk scores. PLoS Genet 9:e1003348
+
+Dudbridge F, Pashayan N, Yang J.  Predictive accuracy of combined genetic and environmental risk scores.  Submitted.
+
+Purcell SM et al (2009) Common polygenic variation contributes to risk of schizophrenia and bipolar disorder. Nature 460:748-52
+
+Simonsen MA et al (2011) Recent methods for polygenic analysis of genome-wide data implicate an important effect of common variants on cardiovascular disease risk. BMC Med Genet 12:146
+}
+\author{
+Frank Dudbridge
+}

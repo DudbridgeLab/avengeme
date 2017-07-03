@@ -1,13 +1,43 @@
-#' Sample Size for Genetic Score
-#' Calculate the size of training sample for a given AUC, R2 or power targetQuantity: "AUC", "R2" or "Power"
-#' @param targetValue: the value of AUC/R2/Power for which to calculate sample size
-#' @param n2: target sample size, by default set equal to the training sample size
-#' @return 
+#' Sample size calculations for polygenic scores
+#'
+#' \code{sampleSizeForGeneScore} calculates the size of training sample to achieve a given AUC, R2 or power in the target sample.
+#'
+#' The sample size is estimated by numerical optimisation.  For each possible sample size,
+#' the p-value threshold is identified for selecting markers into the polygenic score, such that targetQuantity is maximised.
+#'
+#' @param targetQuantity Either "AUC", "R2" or "power" (case insensitive).
+#' @param targetValue The value of the targetQuantity for which to calculate sample size.
+#' @param n2 Target sample size.  Only relevant when targetQuantity is "power". By default set equal to the training sample size.
+#' @inheritParams polygenescore
+
+#' @return A list with the following elements:
 #' \itemize{
-#'	\item{"n = required sample size for the training sample"}
-#' 	\item{"p = p-value threshold for selecting SNPs in the score, such that the target value is achieved with the minimum sample size"}
-#' 	\item{"max = maximum AUC/R2/Power possible if the training sample contained all living humans (n1=1e10)"}
+#'	\item{\code{n} Required sample size for the training sample.  This is the total sample size: to obtain the number of cases, multiply by the sampling fraction.}
+#' 	\item{\code{p} P-value threshold for selecting markers into the polygenic score, such that the target value is achieved with the minimum sample size.}
+#' 	\item{\code{max} Maximum targetQuantity possible if the training sample size were increased to infinity (actually 1e10).}
 #' }
+
+#' @examples
+#' # AUC= 0.75 in breast cancer.  See Table 4, row 4, column 3 in Dudbridge (2013).
+#' sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=T,prevalence=0.036,sampling=0.5)
+#' # $n
+#' # [1] 313981.4
+#' #
+#' # $p
+#' # [1] 0.007500909
+#' #
+#' # $max
+#' # [1] 0.788842
+#' #
+#' # Number of cases
+#' # sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=T,prevalence=0.036,sampling=0.5)$n/2
+#' # [1] 156990.7
+
+#' @author Frank Dudbridge
+
+#' @references
+#' Dudbridge F (2013) Power and predictive accuracy of polygenic risk scores. PLoS Genet 9:e1003348
+#' @export
 sampleSizeForGeneScore=function(targetQuantity,
                                 targetValue,
                                 nsnp,
@@ -22,14 +52,19 @@ sampleSizeForGeneScore=function(targetQuantity,
                                 lambdaS=NA,
                                 shrinkage=F,
                                 logrisk=F,
-                                alpha=0.05) {
+                                alpha=0.05,
+					  r2gx=0,
+					  corgx=0,
+					  r2xy=0,
+					  adjustedEffects=F) {
 
 ###
 # internal objective function, returns AUC/R2/Power for given pupper and n1 
  obj2=function(p,n1) {
     if (is.na(n2)) {n2here=n1}
     else n2here=n2;
-    pgs=polygenescore(nsnp,n1,vg1,n2here,cov12,pi0,plower=0,pupper=p,weighted,binary,prevalence,sampling,lambdaS,shrinkage,logrisk,alpha)
+    pgs=polygenescore(nsnp,c(n1,n2here),vg1=vg1,cov12=cov12,pi0=pi0,pupper=c(0,p),weighted=weighted,binary=binary,prevalence=prevalence,sampling=sampling,
+      lambdaS=lambdaS,shrinkage=shrinkage,logrisk=logrisk,alpha=alpha,r2gx=r2gx,corgx=corgx,r2xy=r2xy,adjustedEffects=adjustedEffects)
     if (tolower(targetQuantity)=="auc") {return(pgs$AUC)}
     if (tolower(targetQuantity)=="r2") {return(pgs$R2)}
     if (tolower(targetQuantity)=="power") {return(pgs$power)}

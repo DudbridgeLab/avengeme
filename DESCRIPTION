@@ -1,36 +1,15 @@
-Package: AVENGEME
-Type: Package
-Title: Additive Variance Explained and Number of Genetic Effects Method of
-    Estimation
-Version: 1.0
-Date: 2016-11-14
-Authors@R: c(person("Frank",
-	 	"Dudbridge",
-		role = c("aut", "cph")),
-	person("Luigi",
-	 	"Palla",
-		role = c("aut")),
-	person("Christopher B.",
-	 	"Cole",
-		email = "chris.c.1221@gmail.com",
-		role = c("aut", "cre")))
-Description: AVENGEME is a set of R functions for the analysis of the polygenic
-    scoring method. In brief, this approach aims to access a large proportion of
-    the heritability of a trait by aggregating genetic effects across thousands
-    of markers into a single composite "score". The markers are generally not
-    individually associated with the trait, at least at standard statistical
-    significance levels. However, the composite score may be associated, indicating
-    a substantial "polygenic" component within the score. The following setup is
-    assumed. Two independent samples of genotype are available; this could be one
-    sample of data split into two subsets. One sample is termed the training sample,
-    the other the target sample. Traits are measured in each sample; different
-    traits could be measured in training and target sample. Subjects are assumed
-    to be unrelated, and genotypes assumed to be independent. In practice we
-    recommend "LD-clumping" methods, such as the --clump option in PLINK, to ensure
-    weak dependence between markers; in this case the methods work well with an
-    r2 threshold of 0.1. Markers with P-values within a fixed range are selected
-    from the training sample, and then used to construct a polygenic score for each
-    subject in the target sample. The score can be tested for association to the
-    target trait, or used to predict individual trait values in the target sample.
-License: MIT
-RoxygenNote: 5.0.1
+Package: avengeme
+Title: Analysis of polygenic scoring methods
+Version: 2.0
+Authors@R: c(person("Frank", "Dudbridge", email = "frank.dudbridge@leicester.ac.uk", role = c("aut", "cre")),
+             person("Christopher B.", "Cole", email = "chris.c.1221@gmail.com", role = c("aut", "cre")),
+             person("Luigi","Palla", email = "luigi.palla@lshtm.ac.uk", role = c("aut")))
+Description: AVENGEME is a set of R functions for the analysis of the polygenic scoring method. Polygenic scores aim to access a large proportion of the heritability of a trait by aggregating genetic effects across thousands of markers into a single composite "score". The markers are generally not individually associated with the trait at standard statistical significance levels. However, the composite score may be associated,indicating a substantial "polygenic" component within the score. The following setup is assumed. Two independent samples of genotypes are available; this could be one sample of data split into two subsets. One sample is termed the training sample, the other the target sample. Traits are measured in each sample; different traits could be measured in training and target sample. Subjects are assumed to be unrelated, and genotypes assumed to be independent. In practice we recommend "LD-clumping" methods, such as the --clump option in PLINK, to ensure weak dependence between markers; in this case the methods work well with an r2 threshold of 0.1. Markers with P-values within a fixed range are selected from the training sample, and then used to construct a polygenic score for each subject in the target sample. The score can be tested for association to the    target trait, or used to predict individual trait values in the target sample.
+Depends: R (>= 3.3.1)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+Author: Frank Dudbridge [aut, cre]
+Maintainer: Frank Dudbridge <frank.dudbridge@leicester.ac.uk>
+Built: R 3.3.1; ; 2017-06-26 13:23:11 UTC; windows
