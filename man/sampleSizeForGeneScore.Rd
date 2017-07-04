@@ -2,28 +2,89 @@
 % Please edit documentation in R/sampleSizeForGeneScore.R
 \name{sampleSizeForGeneScore}
 \alias{sampleSizeForGeneScore}
-\title{Sample Size for Genetic Score
-Calculate the size of training sample for a given AUC, R2 or power targetQuantity: "AUC", "R2" or "Power"}
+\title{Sample size calculations for polygenic scores}
 \usage{
 sampleSizeForGeneScore(targetQuantity, targetValue, nsnp, n2 = NA, vg1 = 0,
-  cov12 = vg1, pi0 = 0, weighted = T, binary = F, prevalence = 0.1,
-  sampling = prevalence, lambdaS = NA, shrinkage = F, logrisk = F,
-  alpha = 0.05)
+  cov12 = vg1, pi0 = 0, weighted = TRUE, binary = FALSE,
+  prevalence = 0.1, sampling = prevalence, lambdaS = NA,
+  shrinkage = FALSE, logrisk = FALSE, alpha = 0.05, r2gx = 0,
+  corgx = 0, r2xy = 0, adjustedEffects = FALSE)
 }
 \arguments{
-\item{targetValue:}{the value of AUC/R2/Power for which to calculate sample size}
+\item{targetQuantity}{Either "AUC", "R2" or "power" (case insensitive).}
 
-\item{n2:}{target sample size, by default set equal to the training sample size}
+\item{targetValue}{The value of the targetQuantity for which to calculate sample size.}
+
+\item{nsnp}{Number of independent markers in the polygenic score.}
+
+\item{n2}{Target sample size.  Only relevant when targetQuantity is "power". By default set equal to the training sample size.}
+
+\item{vg1}{Proportion of variance explained by genetic effects in the training sample.}
+
+\item{cov12}{Covariance between genetic effect sizes in the two samples. If the effects are fully correlated then cov12<=sqrt(vg1).  If the effects are identical then cov12=vg1 (default).}
+
+\item{pi0}{Proportion of markers with no effect on the training trait.}
+
+\item{weighted}{TRUE if estimated effect sizes are used as weights in forming the polygenic score. If false, an unweighted score is used, which is the sum of risk alleles carried.}
+
+\item{binary}{TRUE if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
+
+\item{prevalence}{For a binary trait, prevalence in the training sample, By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.}
+
+\item{sampling}{For a binary trait, case/control sampling fraction in the training sample. By default, sampling equals the prevalence, as in a cohort study.  If the sampling fraction is different in the target sample, sampling should be a vector with two elements for the training and target samples respectively.}
+
+\item{lambdaS}{Sibling relative recurrence risk in training sample, can be specified instead of vg1.}
+
+\item{shrinkage}{TRUE if effect sizes are to be shrunk to BLUPs.}
+
+\item{logrisk}{TRUE if binary trait arises from log-risk model rather than liability threshold.}
+
+\item{alpha}{Significance level for testing association of the polygenic score in the target sample.}
+
+\item{r2gx}{Proportion of variance in environmental risk score explained by genetic effects in training sample.}
+
+\item{corgx}{Genetic correlation between environmental risk score and training trait.}
+
+\item{r2xy}{Proportion of variance in training trait explained by environmental risk score.}
+
+\item{adjustedEffects}{TRUE if polygenic and envrionmental scores are combined as a weighted sum. If FALSE, the scores are combined as an unweighted sum even if they are correlated.}
 }
 \value{
+A list with the following elements:
 \itemize{
-\item{"n = required sample size for the training sample"}
-	\item{"p = p-value threshold for selecting SNPs in the score, such that the target value is achieved with the minimum sample size"}
-	\item{"max = maximum AUC/R2/Power possible if the training sample contained all living humans (n1=1e10)"}
+\item{\code{n} Required sample size for the training sample.  This is the total sample size: to obtain the number of cases, multiply by the sampling fraction.}
+	\item{\code{p} P-value threshold for selecting markers into the polygenic score, such that the target value is achieved with the minimum sample size.}
+	\item{\code{max} Maximum targetQuantity possible if the training sample size were increased to infinity (actually 1e10).}
 }
 }
 \description{
-Sample Size for Genetic Score
-Calculate the size of training sample for a given AUC, R2 or power targetQuantity: "AUC", "R2" or "Power"
+Calculates the size of training sample to achieve a given AUC, R2 or power in the target sample.
 }
-
+\details{
+The sample size is estimated by numerical optimisation.  For each possible sample size,
+the P-value threshold is identified for selecting markers into the polygenic score, such that targetQuantity is maximised.
+}
+\examples{
+# AUC= 0.75 in breast cancer.  See Table 4, row 4, column 3 in Dudbridge (2013).
+sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=TRUE,
+prevalence=0.036,sampling=0.5)
+# $n
+# [1] 313981.4
+#
+# $p
+# [1] 0.007500909
+#
+# $max
+# [1] 0.788842
+#
+# Number of cases
+sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=TRUE,
+prevalence=0.036,sampling=0.5)$n/2
+# [1] 156990.7
+}
+\references{
+Dudbridge F (2013) Power and predictive accuracy of polygenic risk scores. PLoS Genet 9:e1003348
+}
+\author{
+Frank Dudbridge
+}

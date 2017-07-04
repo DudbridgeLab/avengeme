@@ -4,7 +4,7 @@ shinyUI(fluidPage(
 
   titlePanel("AVENGEME"),
   p("Additive Variance Explained and Number of Genetic Effects Method of Estimation"),
-  p("Luigi Palla and Frank Dudbridge, Am J Hum Genet (2015) in press"),
+  p("Luigi Palla and Frank Dudbridge, Am J Hum Genet (2015) 97:250-259"),
 
   fluidRow(
     column(2,
@@ -23,7 +23,7 @@ column(4,
         condition = "input.estimateVariance == false",
         sliderInput("vg1",label="Fix variance to value:",value=0.5,min=0,max=1,step=0.01)
       ),
-        
+
       conditionalPanel(
         condition = "input.fix == false",
         checkboxInput("estimateCovariance","Estimate covariance between training and target samples",value=TRUE),

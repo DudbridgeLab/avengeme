@@ -1,7 +1,4 @@
-library(shiny)
-
 shinyServer(function(input, output) {
-  source("avengeme.R")
 
   results = eventReactive(input$go, {
 
@@ -40,7 +37,7 @@ shinyServer(function(input, output) {
         }
       }
       else {
-        outputString=paste(outputString,"<font color=#ff0000>",result$error,"</font>")        
+        outputString=paste(outputString,"<font color=#ff0000>",result$error,"</font>")
       }
       outputString
     }
