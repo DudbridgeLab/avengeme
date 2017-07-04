@@ -12,3 +12,5 @@ LazyData: true
 RoxygenNote: 6.0.1
 Author: Frank Dudbridge [aut, cre]
 Maintainer: Frank Dudbridge <frank.dudbridge@leicester.ac.uk>
+Imports: mvtnorm
+Suggests: shiny
