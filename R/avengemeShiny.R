@@ -2,7 +2,7 @@
 #'
 #' Launches a Shiny graphical user interface for the avengeme package.
 #'
-#' Uses the \code{\link{estimateGeneticModel}} function to estimate all parameters that are not explicitly set in the graphical interface.
+#' Uses the \code{\link{estimatePolygenicModel}} function to estimate all parameters that are not explicitly set in the graphical interface.
 #' If all parameters are set, calls the \code{\link{polygenescore}} function instead.
 #' Parameters for combined genetic and environmental risk scores are not yet implemented.
 #'
@@ -19,5 +19,5 @@ avengemeShiny <- function() {
     stop("Could not find example directory. Try re-installing `avengeme`.", call. = FALSE)
   }
 
-  runApp(appDir, display.mode = "normal")
+  shiny::runApp(appDir, display.mode = "normal")
 }
