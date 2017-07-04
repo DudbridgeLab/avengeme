@@ -5,9 +5,10 @@
 \title{Plot predictive accuracy}
 \usage{
 plotAccuracy(xlim = c(1, 500), ylim = 0, nsnp = 1e+05, vg1 = 0,
-  pi0 = 0, cov12 = NA, fix = T, binary = F, prevalence = 0,
-  sampling = 0.5, r2gx = 0, corgx = 0, r2xy = 0, adjustedEffects = F,
-  plot = T, col = "black", breakeven = 0.5, lty = 1)
+  pi0 = 0, cov12 = NA, fix = TRUE, binary = FALSE, prevalence = 0,
+  sampling = 0.5, r2gx = 0, corgx = 0, r2xy = 0,
+  adjustedEffects = FALSE, plot = TRUE, col = "black", breakeven = 0.5,
+  lty = 1)
 }
 \arguments{
 \item{xlim}{Vector of 2 elements, giving the range of sample size to display on the x-axis, in 1000s.  For binary traits this is the number of cases.}
@@ -36,7 +37,7 @@ plotAccuracy(xlim = c(1, 500), ylim = 0, nsnp = 1e+05, vg1 = 0,
 
 \item{r2xy}{Proportion of variance in training trait explained by environmental risk score.}
 
-\item{adjustedEffects}{TRUE if polygenic and envrionmental scores are combined with adjustment for each other.}
+\item{adjustedEffects}{TRUE if polygenic and envrionmental scores are combined as a weighted sum. If FALSE, the scores are combined as an unweighted sum even if they are correlated.}
 
 \item{plot}{TRUE is a new plot is to be drawn, otherwise draw lines on the existing plot.}
 
@@ -50,12 +51,12 @@ plotAccuracy(xlim = c(1, 500), ylim = 0, nsnp = 1e+05, vg1 = 0,
 A list with the following elements:
 \itemize{
 \item{\code{limit} Value of AUC/R2 at the maximum sample size plotted.}
-\item{\code{breakeven} Sample size at which the AUC/R2 exceeds the value specified by the breakeven parameter}
-\item{\code{plimit} Optimal p-value threshold at the maximum sample size plotted}
+\item{\code{breakeven} Sample size at which the AUC/R2 exceeds the value specified by the breakeven parameter.}
+\item{\code{plimit} Optimal P-value threshold at the maximum sample size plotted.}
 }
 }
 \description{
-\code{plotAccuracy} plots the AUC or the R2 as a function of training sample size.
+Plots the AUC or the R2 as a function of training sample size.
 }
 \details{
 AUC is plotted for binary traits, R2 for quantitative traits.  At each point, the p-value threshold is identified for selecting markers into the polygenic score,

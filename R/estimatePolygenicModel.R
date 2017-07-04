@@ -1,6 +1,6 @@
 #' Estimate polygenic model
 #'
-#' \code{estimatePolygenicModel} estimates the parameters of an underlying genetic model from the results of association tests of a polygenic score.
+#' Estimates the parameters of an underlying genetic model from the results of association tests of a polygenic score.
 #'
 #' The input is a vector of P-values or (signed) Z-statistics from the association test of the polygenic score in the target sample.
 #' P-values are assumed if all the values are in (0,1), otherwise Z-statistics are assumed.
@@ -14,8 +14,8 @@
 #' @param pi0 Proportion of markers with no effect on the training trait.  By default, the proportion is the same for the target trait; otherwise pi0 should be a vector with two elements for the training and target samples respectively.
 #' @param boot Number of bootstrap replicates to estimate approximate confidence intervals. If boot==0 (default), an analytic interval is calculated using profile likelihood.
 #' if boot>0, a bootstrap interval is estimated. These intervals assume that the input P-values are independent; this assumption is generally untrue and the interval will be slightly smaller than it should be.
-#' @param bidirectional TRUE if results are also given when exchanging the role of training and target samples.
-#' In this case, vg2 can also be estimated, as can pi0 in the target sample. The input vector p should now be twice as long with the list of P-values for training/target followed by the list for target/training.
+#' @param bidirectional TRUE if p also contains results when exchanging the role of training and target samples.
+#' In this case, vg and pi0 can also be estimated in the target sample. The input vector p should now be twice as long with the list of P-values for training/target followed by the list for target/training.
 #' @param initial Specify starting values for numerical maximisation of the likelihood.  The number of elements must equal the number of estimated parameters, and follows the order vg[1], vg[2], pi0[1], pi0[2], cov12, for those parameters that are actually being estimated.  Default 0.5 for all parameters.
 #' @param fixvg2pi02 TRUE if the same genetic model is assumed for the training and target samples.
 #' This fixes the target variance and the covariance to both equal the variance explained in the training sample, vg1. Also fixes the proportion of null markers in the target sample to equal the proportion in the training sample.
@@ -26,11 +26,11 @@
 #' Values fixed at input are returned unchanged with a degenerate confidence interval.
 #' Each element is a vector consisting of the point estimate followed by its lower and upper 95\% confidence limit.
 #' \itemize{
-#'	\item{\code{vg} Variance explained in the target trait.  If bidirectional estimation is selected, \code{vg} is a matrix with two rows corresponding to the training and target samples respectively.}
+#'	\item{\code{vg} Variance explained in the training trait.  If bidirectional estimation is selected, \code{vg} is a matrix with two rows corresponding to the training and target samples respectively.}
 #'	\item{\code{cov12} Covariance between genetic effects in the two samples.}
 #'	\item{\code{pi0} Proportion of markers with no effect on the training trait. If bidirectional estimation is selected, \code{pi0} is a matrix with two rows corresponding to the training and target samples respectively.}
 #'	\item{\code{logLikelihood} Maximised log-likelihood at the fitted model.}
-#'	\item{\code{error} Error message, if any}
+#'	\item{\code{error} Error message, if any.}
 #' }
 #'
 #' @examples
@@ -40,7 +40,8 @@
 #' pupper=c(0,5e-8,1e-6,1e-4,1e-3,0.01,0.05,0.1,0.2,0.5,1)
 #' p=c(9.85087e-24, 4.44037e-36, 2.08048e-71, 8.0594e-103, 2.0587e-138,
 #'     1.4131e-164,5.8954e-166,3.75e-164,7.9488e-159,2.3286e-157)
-#' estimatePolygenicModel(p,103125,c(77195,5120),pupper=pupper,nested=TRUE,binary=TRUE,prevalence=0.01,sampling=c(0.425,0.515),fixvg2pi02=TRUE)
+#' estimatePolygenicModel(p,103125,c(77195,5120),pupper=pupper,nested=TRUE,binary=TRUE,
+#' prevalence=0.01,sampling=c(0.425,0.515),fixvg2pi02=TRUE)
 #' # $vg
 #' # [1] 0.2449328 0.2352049 0.2547500
 #' #
@@ -56,7 +57,8 @@
 #' # $error
 #' # [1] ""
 #'
-#' # Genetic covariance between bipolar disorder and schizophrenia, table 6 in Palla & Dudbridge (2015)
+#' # Genetic covariance between bipolar disorder and schizophrenia
+#' # Table 6 in Palla & Dudbridge (2015)
 #' # Nagelkerke R2 SCZ-BPD from table S5 of Cross Disorder Group (2013)
 #' R2N=c(.0044,.0065,.015,.023,.024,.025,.024,.024,.025,.025)
 #' n1=11922
@@ -64,7 +66,7 @@
 #' # Convert to observed scale R2
 #' R2O=R2N*(1-p1^(2*p1)*(1-p1)^(2*(1-p1)))
 #' # Convert to chisq statistics
-#' X2=n*R2O/(1-R2O)
+#' X2=n1*R2O/(1-R2O)
 #' # Now the same for BPD-SCZ
 #' R2N=c(0.002,0.0048,0.012,0.017,0.021,0.021,0.022,0.021,0.021,0.021)
 #' n2=17012
@@ -74,7 +76,8 @@
 #' # Perform bidirectional estimation with Z-scores as the first argument
 #' # Small difference from published result due to minor bug fixes
 #' pupper=c(0,.0001,.001,.01,.05,.1,.2,.3,.4,.5,1)
-#' estimatePolygenicModel(sqrt(X2),nsnp=83884,n=c(n1,n2),binary=TRUE,pupper=pupper,prevalence=c(0.01,0.01),sampling=c(p1,p2),bidirectional=TRUE)
+#' estimatePolygenicModel(sqrt(X2),nsnp=83884,n=c(n1,n2),binary=TRUE,pupper=pupper,
+#' prevalence=c(0.01,0.01),sampling=c(p1,p2),bidirectional=TRUE)
 #' # $vg
 #' # vg      vgLo      vgHi
 #' # [1,] 0.8800473 0.1784087 0.9999528
@@ -98,10 +101,6 @@
 
 #' @references
 #' Palla L and Dudbridge F (2015) A fast method using polygenic scores to estimate the variance explained by genome-wide marker panels and the proportion of variants affecting a trait. Am J Hum Genet 97:250-259
-#' @references
-#' Schizophrenia Working Group of the Psychiatric Genomics Consoritum (2014) Biological insights from 108 schizophrenia-associated genetic loci.  Nature 511:421-427
-#' @references
-#' Cross Disorder Group of the Psychiatric Genomics Consortium (2013) dentification of risk loci with shared effects on five major psychiatric disorders: a genome-wide analysis.  Lancet 381:1371-1379
 #' @export
 estimatePolygenicModel=function(p,
                                 nsnp,
@@ -110,19 +109,19 @@ estimatePolygenicModel=function(p,
                                 cov12=NA,
                                 pi0=c(NA,NA),
                                 pupper=1,
-					  nested=T,
-                                weighted=T,
-                                binary=c(F,F),
+					  nested=TRUE,
+                                weighted=TRUE,
+                                binary=c(FALSE,FALSE),
                                 prevalence=c(0.1,0.1),
                                 sampling=prevalence,
                                 lambdaS=c(NA,NA),
-                                shrinkage=F,
-                                logrisk=F,
+                                shrinkage=FALSE,
+                                logrisk=FALSE,
                                 option=0,
                                 boot=0,
-                                bidirectional=F,
+                                bidirectional=FALSE,
                                 initial=c(),
-                                fixvg2pi02=F
+                                fixvg2pi02=FALSE
                                 ) {
 
 # inverse logit function

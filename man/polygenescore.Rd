@@ -5,10 +5,10 @@
 \title{Calculate power and predictive accuracy of a polygenic score}
 \usage{
 polygenescore(nsnp, n, vg1 = 0, cov12 = vg1, pi0 = 0, pupper = c(0, 1),
-  nested = T, weighted = T, binary = c(F, F), prevalence = c(0.1, 0.1),
-  sampling = prevalence, lambdaS = NA, shrinkage = F, logrisk = F,
-  alpha = 0.05, r2gx = 0, corgx = 0, r2xy = 0, adjustedEffects = F,
-  riskthresh = 0.1)
+  nested = TRUE, weighted = TRUE, binary = c(FALSE, FALSE),
+  prevalence = c(0.1, 0.1), sampling = prevalence, lambdaS = NA,
+  shrinkage = FALSE, logrisk = FALSE, alpha = 0.05, r2gx = 0,
+  corgx = 0, r2xy = 0, adjustedEffects = FALSE, riskthresh = 0.1)
 }
 \arguments{
 \item{nsnp}{Number of independent markers in the polygenic score.}
@@ -42,7 +42,7 @@ No default - a value must be given}
 
 \item{logrisk}{TRUE if binary trait arises from log-risk model rather than liability threshold.}
 
-\item{alpha}{Type-1 error for testing association in the target sample.}
+\item{alpha}{Significance level for testing association of the polygenic score in the target sample.}
 
 \item{r2gx}{Proportion of variance in environmental risk score explained by genetic effects in training sample.}
 
@@ -50,7 +50,7 @@ No default - a value must be given}
 
 \item{r2xy}{Proportion of variance in training trait explained by environmental risk score.}
 
-\item{adjustedEffects}{TRUE if polygenic and envrionmental scores are combined with adjustment for each other.}
+\item{adjustedEffects}{TRUE if polygenic and envrionmental scores are combined as a weighted sum. If FALSE, the scores are combined as an unweighted sum even if they are correlated.}
 
 \item{riskthresh}{Absolute risk threshold for calculating net reclassification index.}
 }
@@ -59,7 +59,7 @@ A list with elements containing quantities describing the association of the pol
 \itemize{
 \item{\code{R2} Squared correlation between polygenic score and target trait.}
 \item{\code{NCP} Non-centrality parameter of the chisq test of association between polygenic score and target trait.}
-\item{\code{p} Expected p-value of the chisq test of association between polygenic score and target trait.}
+\item{\code{p} Expected P-value of the chisq test of association between polygenic score and target trait.}
 \item{\code{power} Power of the chisq test of association between polygenic score and target trait.}
 \item{\code{FDR} Expected proportion of false positives among selected markers.}
 \item{\code{AUC} For binary traits, area under ROC curve.}
@@ -70,49 +70,51 @@ A list with elements containing quantities describing the association of the pol
 }
 }
 \description{
-\code{polygenescore} calculates measures of association for a polygenic score derived from a training sample
-when used to predict traits in a target sample.
+Calculates measures of association for a polygenic score derived from a training sample
+to predict traits in a target sample.
 }
 \details{
 The following setup is assumed. Two independent samples of genotypes are available; this could be
 one sample of data split into two subsets.  One sample is termed the training sample, the other the
 target sample.  Traits are measured in each sample; different traits could be measured in training and target
 samples.  Subjects are assumed to be unrelated, and genotypes assumed to be
-independent.  In practice we recommend "LD-clumping" methods, such as the --clump option in
+independent.  In practice we recommend LD-clumping methods, such as the --clump option in
 PLINK, to ensure weak dependence between markers; in this case the methods are almost unbiased if an r2
 threshold of 0.1 is used. Markers with P-values within a fixed range are selected from the training sample, and
 then used to construct a polygenic score for each subject in the target sample.  The score can be tested for
 association to the target trait, or used to predict individual trait values in the target sample.
 }
 \examples{
-# P-value for ISC schizophrenia score associated with schizophrenia in MGS-EA (Purcell et al 2009)
+# P-value for ISC schizophrenia score associated with schizophrenia in MGS-EA
 # See page 3, column 2, paragraph 3 of Dudbridge (2013)
-polygenescore(74062,n=c(3322+3587,2687+2656),vg1=0.269,pi0=0.99,binary=TRUE,sampling=c(3322/6909,2687/5343),pupper=c(0,0.5),prevalence=.01)$p
+polygenescore(74062,n=c(3322+3587,2687+2656),vg1=0.269,pi0=0.99,binary=TRUE,
+sampling=c(3322/6909,2687/5343),pupper=c(0,0.5),prevalence=.01)$p
 # [1] 1.029771e-28
 
-# Power for ISC schizophrenia score associated with bipolar disorder in WTCCC (Purcell et al, 2009)
+# Power for ISC schizophrenia score associated with bipolar disorder in WTCCC
 # See page 4, column 2, paragraph 2 of Dudbridge (2013)
-polygenescore(74062,c(3322+3587,1829+2935),vg1=0.287,cov12=0.28*0.287,binary=TRUE,sampling=c(3322/6909,1829/4764),pupper=c(0,0.5),prevalence=.01)$power
+polygenescore(74062,c(3322+3587,1829+2935),vg1=0.287,cov12=0.28*0.287,binary=TRUE,
+sampling=c(3322/6909,1829/4764),pupper=c(0,0.5),prevalence=.01)$power
 # [1] 0.8042843
 
-# Power for cross validation study of Framingham risk score (Simonsen et al, 2011)
+# Power for cross validation study of Framingham risk score
 # See page 6, column 1, paragraph 1 of Dudbridge (2013)
-polygenescore(100000,c(1575,175),vg1=1,pupper=c(0,0.1,0.2,0.3,0.4,0.5),nested=F)$power
+polygenescore(100000,c(1575,175),vg1=1,pupper=c(0,0.1,0.2,0.3,0.4,0.5),
+nested=FALSE)$power
 # [1] 0.19723400 0.11733175 0.09195134 0.07733049 0.06771049
 
-# Net reclassification index for prediction of cardiovascular disease with QRISK-2 and 53 SNPs
+# Net reclassification index for cardiovascular disease with QRISK-2 and 53 SNPs
 # See table 3, row 1, columns 5-6 of Dudbridge et al (submitted)
-polygenescore(nsnp=1e5,n=63746+130681,vg1=0.3,pi0=0.8,weighted=F,binary=TRUE,sampling=63746/194427,prevalence=0.15,pupper=c(0,5e-8),r2gx=0.3,r2xy=0.052,corgx=0.1,riskthresh=0.1,adjustedEffects=TRUE)$NRI
-# [1] -0.006003195  0.015176968  0.009173774
+# results vary due to stochastic evaluation of multivariate normal probabilities
+polygenescore(nsnp=1e5,n=63746+130681,vg1=0.3,pi0=0.8,binary=TRUE,
+prevalence=0.15,sampling=63746/194427,pupper=c(0,5e-8),
+r2gx=0.3,r2xy=0.052,corgx=0.1,riskthresh=0.1,adjustedEffects=TRUE)$NRI
+# [1] -0.006042718  0.015266759  0.009224041
 }
 \references{
 Dudbridge F (2013) Power and predictive accuracy of polygenic risk scores. PLoS Genet 9:e1003348
 
 Dudbridge F, Pashayan N, Yang J.  Predictive accuracy of combined genetic and environmental risk scores.  Submitted.
-
-Purcell SM et al (2009) Common polygenic variation contributes to risk of schizophrenia and bipolar disorder. Nature 460:748-52
-
-Simonsen MA et al (2011) Recent methods for polygenic analysis of genome-wide data implicate an important effect of common variants on cardiovascular disease risk. BMC Med Genet 12:146
 }
 \author{
 Frank Dudbridge

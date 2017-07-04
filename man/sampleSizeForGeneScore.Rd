@@ -5,9 +5,10 @@
 \title{Sample size calculations for polygenic scores}
 \usage{
 sampleSizeForGeneScore(targetQuantity, targetValue, nsnp, n2 = NA, vg1 = 0,
-  cov12 = vg1, pi0 = 0, weighted = T, binary = F, prevalence = 0.1,
-  sampling = prevalence, lambdaS = NA, shrinkage = F, logrisk = F,
-  alpha = 0.05, r2gx = 0, corgx = 0, r2xy = 0, adjustedEffects = F)
+  cov12 = vg1, pi0 = 0, weighted = TRUE, binary = FALSE,
+  prevalence = 0.1, sampling = prevalence, lambdaS = NA,
+  shrinkage = FALSE, logrisk = FALSE, alpha = 0.05, r2gx = 0,
+  corgx = 0, r2xy = 0, adjustedEffects = FALSE)
 }
 \arguments{
 \item{targetQuantity}{Either "AUC", "R2" or "power" (case insensitive).}
@@ -38,7 +39,7 @@ sampleSizeForGeneScore(targetQuantity, targetValue, nsnp, n2 = NA, vg1 = 0,
 
 \item{logrisk}{TRUE if binary trait arises from log-risk model rather than liability threshold.}
 
-\item{alpha}{Type-1 error for testing association in the target sample.}
+\item{alpha}{Significance level for testing association of the polygenic score in the target sample.}
 
 \item{r2gx}{Proportion of variance in environmental risk score explained by genetic effects in training sample.}
 
@@ -46,7 +47,7 @@ sampleSizeForGeneScore(targetQuantity, targetValue, nsnp, n2 = NA, vg1 = 0,
 
 \item{r2xy}{Proportion of variance in training trait explained by environmental risk score.}
 
-\item{adjustedEffects}{TRUE if polygenic and envrionmental scores are combined with adjustment for each other.}
+\item{adjustedEffects}{TRUE if polygenic and envrionmental scores are combined as a weighted sum. If FALSE, the scores are combined as an unweighted sum even if they are correlated.}
 }
 \value{
 A list with the following elements:
@@ -57,15 +58,16 @@ A list with the following elements:
 }
 }
 \description{
-\code{sampleSizeForGeneScore} calculates the size of training sample to achieve a given AUC, R2 or power in the target sample.
+Calculates the size of training sample to achieve a given AUC, R2 or power in the target sample.
 }
 \details{
 The sample size is estimated by numerical optimisation.  For each possible sample size,
-the p-value threshold is identified for selecting markers into the polygenic score, such that targetQuantity is maximised.
+the P-value threshold is identified for selecting markers into the polygenic score, such that targetQuantity is maximised.
 }
 \examples{
 # AUC= 0.75 in breast cancer.  See Table 4, row 4, column 3 in Dudbridge (2013).
-sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=TRUE,prevalence=0.036,sampling=0.5)
+sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=TRUE,
+prevalence=0.036,sampling=0.5)
 # $n
 # [1] 313981.4
 #
@@ -76,7 +78,8 @@ sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=TRUE,pr
 # [1] 0.788842
 #
 # Number of cases
-# sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=T,prevalence=0.036,sampling=0.5)$n/2
+sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=TRUE,
+prevalence=0.036,sampling=0.5)$n/2
 # [1] 156990.7
 }
 \references{

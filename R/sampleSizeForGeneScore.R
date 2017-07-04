@@ -1,9 +1,9 @@
 #' Sample size calculations for polygenic scores
 #'
-#' \code{sampleSizeForGeneScore} calculates the size of training sample to achieve a given AUC, R2 or power in the target sample.
+#' Calculates the size of training sample to achieve a given AUC, R2 or power in the target sample.
 #'
 #' The sample size is estimated by numerical optimisation.  For each possible sample size,
-#' the p-value threshold is identified for selecting markers into the polygenic score, such that targetQuantity is maximised.
+#' the P-value threshold is identified for selecting markers into the polygenic score, such that targetQuantity is maximised.
 #'
 #' @param targetQuantity Either "AUC", "R2" or "power" (case insensitive).
 #' @param targetValue The value of the targetQuantity for which to calculate sample size.
@@ -19,7 +19,8 @@
 
 #' @examples
 #' # AUC= 0.75 in breast cancer.  See Table 4, row 4, column 3 in Dudbridge (2013).
-#' sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=TRUE,prevalence=0.036,sampling=0.5)
+#' sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=TRUE,
+#' prevalence=0.036,sampling=0.5)
 #' # $n
 #' # [1] 313981.4
 #' #
@@ -30,7 +31,8 @@
 #' # [1] 0.788842
 #' #
 #' # Number of cases
-#' # sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=T,prevalence=0.036,sampling=0.5)$n/2
+#' sampleSizeForGeneScore("AUC",0.75,nsnp=100000,vg1=0.44/2,pi0=0.90,binary=TRUE,
+#' prevalence=0.036,sampling=0.5)$n/2
 #' # [1] 156990.7
 
 #' @author Frank Dudbridge
@@ -45,18 +47,18 @@ sampleSizeForGeneScore=function(targetQuantity,
                                 vg1=0,
                                 cov12=vg1,
                                 pi0=0,
-                                weighted=T,
-                                binary=F,
+                                weighted=TRUE,
+                                binary=FALSE,
                                 prevalence=0.1,
                                 sampling=prevalence,
                                 lambdaS=NA,
-                                shrinkage=F,
-                                logrisk=F,
+                                shrinkage=FALSE,
+                                logrisk=FALSE,
                                 alpha=0.05,
 					  r2gx=0,
 					  corgx=0,
 					  r2xy=0,
-					  adjustedEffects=F) {
+					  adjustedEffects=FALSE) {
 
 ###
 # internal objective function, returns AUC/R2/Power for given pupper and n1

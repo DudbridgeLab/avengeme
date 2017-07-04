@@ -10,7 +10,7 @@ avengemeShiny()
 Launches a Shiny graphical user interface for the avengeme package.
 }
 \details{
-Uses the \code{\link{estimateGeneticModel}} function to estimate all parameters that are not explicitly set in the graphical interface.
+Uses the \code{\link{estimatePolygenicModel}} function to estimate all parameters that are not explicitly set in the graphical interface.
 If all parameters are set, calls the \code{\link{polygenescore}} function instead.
 Parameters for combined genetic and environmental risk scores are not yet implemented.
 }
