@@ -1,6 +1,6 @@
 # AVENGEME
 
-AVENGEME is package for the analysis of the polygenic scoring method.  A Shiny interface is provided.
+AVENGEME is a package for the analysis of the polygenic scoring method.  A Shiny interface is provided.
 
 To install within R, devtools::install_github("DudbridgeLab/avengeme").
 
