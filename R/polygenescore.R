@@ -25,7 +25,7 @@
 #' @param nested TRUE if the p-value intervals are nested, that is they have the same lower bound, which is the first element of pupper. If false, lower bound of the second interval is the upper bound of the first and so on.
 #' @param weighted TRUE if estimated effect sizes are used as weights in forming the polygenic score. If false, an unweighted score is used, which is the sum of risk alleles carried.
 #' @param binary TRUE if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.
-#' @param prevalence For a binary trait, prevalence in the training sample, By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.
+#' @param prevalence For a binary trait, prevalence in the training sample. By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.
 #' @param sampling For a binary trait, case/control sampling fraction in the training sample. By default, sampling equals the prevalence, as in a cohort study.  If the sampling fraction is different in the target sample, sampling should be a vector with two elements for the training and target samples respectively.
 #' @param lambdaS Sibling relative recurrence risk in training sample, can be specified instead of vg1.
 #' @param shrinkage TRUE if effect sizes are to be shrunk to BLUPs.
