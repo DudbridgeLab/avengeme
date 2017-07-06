@@ -5,7 +5,7 @@ Authors@R: c(person("Frank", "Dudbridge", email = "frank.dudbridge@leicester.ac.
              person("Christopher B.", "Cole", email = "chris.c.1221@gmail.com", role = c("aut", "cre")),
              person("Luigi","Palla", email = "luigi.palla@lshtm.ac.uk", role = c("aut")))
 Description: AVENGEME (Additive Variance Explained and Number of Genetic Effects Method of Estimation) is a package for the analysis of the polygenic scoring method. Polygenic scores access a large proportion of the heritability of a trait by aggregating genetic effects across thousands of markers into a single composite score. The markers may not be individually associated with the trait at standard statistical significance levels. However, the composite score may be associated, indicating a substantial polygenic component within the score.
-Depends: R (>= 3.3.1)
+Depends: R (>= 3.0.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
