@@ -32,7 +32,7 @@ No default - a value must be given}
 
 \item{binary}{TRUE if the training trait is binary. By default, the target trait is binary if the training trait is; otherwise binary should be a vector with two elements for the training and target samples respectively.}
 
-\item{prevalence}{For a binary trait, prevalence in the training sample, By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.}
+\item{prevalence}{For a binary trait, prevalence in the training sample. By default, prevalence is the same in the target sample. Otherwise, prevalence should be a vector with two elements for the training and target samples respectively.}
 
 \item{sampling}{For a binary trait, case/control sampling fraction in the training sample. By default, sampling equals the prevalence, as in a cohort study.  If the sampling fraction is different in the target sample, sampling should be a vector with two elements for the training and target samples respectively.}
 
