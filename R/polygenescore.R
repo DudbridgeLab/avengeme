@@ -280,9 +280,8 @@ MSE=c()
   R2 = scoreCovariance^2/varGeneScoreHat/varY2
 
 # catch impossible configurations
-# disabled for now
-  if (FALSE) {
-    if (is.nan(max(R2)) | max(R2)>1 | vg1>0 & abs(cov12)/sqrt(vg1)>1) {
+  if (TRUE) {
+    if (is.nan(max(R2))) { # } | max(R2)>1 | vg1>0 & abs(cov12)/sqrt(vg1)>1) {
       mynan=rep(NaN,length(plower))
       return(list(R2=mynan,NCP=mynan,p=mynan,power=mynan,AUC=mynan,MSE=mynan,error="cov12 incompatible with vg1"))
     }
