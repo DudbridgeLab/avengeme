@@ -12,4 +12,4 @@ To run the Shiny interface, avengeme::avengemeShiny().
 
 > Palla L and Dudbridge F (2015) A fast method using polygenic scores to estimate the variance explained by genome-wide marker panels and the proportion of variants affecting a trait. Am J Hum Genet 97:250-259
 
-> Dudbridge F, Pashayan N, Yang J (submitted) Predictive accuracy of combined genetic and non-genetic risk scores.
+> Dudbridge F, Pashayan N, Yang J (2017) Predictive accuracy of combined genetic and non-genetic risk scores.  Genet Epidemiol in press
