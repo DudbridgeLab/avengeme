@@ -8,7 +8,8 @@ estimatePolygenicModel(p, nsnp, n, vg = c(NA, NA), cov12 = NA, pi0 = c(NA,
   NA), pupper = 1, nested = TRUE, weighted = TRUE, binary = c(FALSE,
   FALSE), prevalence = c(0.1, 0.1), sampling = prevalence, lambdaS = c(NA,
   NA), shrinkage = FALSE, logrisk = FALSE, option = 0, boot = 0,
-  bidirectional = FALSE, initial = c(), fixvg2pi02 = FALSE)
+  bidirectional = FALSE, initial = c(), fixvg2pi02 = FALSE,
+  alpha = 0.05)
 }
 \arguments{
 \item{p}{Vector of P-values or Z-statistics for polygenic scores tested in the target data. Automatically detects Z-statistics if some entries of p are greater than 1 or less than 0.}
@@ -56,11 +57,13 @@ In this case, vg and pi0 can also be estimated in the target sample. The input v
 
 \item{fixvg2pi02}{TRUE if the same genetic model is assumed for the training and target samples.
 This fixes the target variance and the covariance to both equal the variance explained in the training sample, vg1. Also fixes the proportion of null markers in the target sample to equal the proportion in the training sample.}
+
+\item{alpha}{One minus the level of confidence intervals.  Default of 0.05 gives a 95\% CI.}
 }
 \value{
 A list with elements corresponding to the estimated genetic model.
 Values fixed at input are returned unchanged with a degenerate confidence interval.
-Each element is a vector consisting of the point estimate followed by its lower and upper 95\% confidence limit.
+Each element is a vector consisting of the point estimate followed by its lower and upper (1-alpha)\% confidence limit.
 \itemize{
 \item{\code{vg} Variance explained in the training trait.  If bidirectional estimation is selected, \code{vg} is a matrix with two rows corresponding to the training and target samples respectively.}
 \item{\code{cov12} Covariance between genetic effects in the two samples.}
