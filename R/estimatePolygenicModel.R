@@ -20,11 +20,12 @@
 #' @param fixvg2pi02 TRUE if the same genetic model is assumed for the training and target samples.
 #' This fixes the target variance and the covariance to both equal the variance explained in the training sample, vg1. Also fixes the proportion of null markers in the target sample to equal the proportion in the training sample.
 #' @param option Parameter used in method development.  Default 0, fits the model by maximum likelihood for Z statistics.  1 and 2 fit the model by least squares to chisq and Z statistics respectively.  3 fits by maximum likelihood for chisq statistics.
+#' @param alpha One minus the level of confidence intervals.  Default of 0.05 gives a 95\% CI.
 #' @inheritParams polygenescore
 #'
 #' @return A list with elements corresponding to the estimated genetic model.
 #' Values fixed at input are returned unchanged with a degenerate confidence interval.
-#' Each element is a vector consisting of the point estimate followed by its lower and upper 95\% confidence limit.
+#' Each element is a vector consisting of the point estimate followed by its lower and upper (1-alpha)\% confidence limit.
 #' \itemize{
 #'	\item{\code{vg} Variance explained in the training trait.  If bidirectional estimation is selected, \code{vg} is a matrix with two rows corresponding to the training and target samples respectively.}
 #'	\item{\code{cov12} Covariance between genetic effects in the two samples.}
@@ -109,7 +110,7 @@ estimatePolygenicModel=function(p,
                                 cov12=NA,
                                 pi0=c(NA,NA),
                                 pupper=1,
-					  nested=TRUE,
+                                nested=TRUE,
                                 weighted=TRUE,
                                 binary=c(FALSE,FALSE),
                                 prevalence=c(0.1,0.1),
@@ -121,7 +122,8 @@ estimatePolygenicModel=function(p,
                                 boot=0,
                                 bidirectional=FALSE,
                                 initial=c(),
-                                fixvg2pi02=FALSE
+                                fixvg2pi02=FALSE,
+                                alpha=0.05
                                 ) {
 
 # inverse logit function
@@ -278,7 +280,7 @@ if (errorMsg=="" & nparam>0) {
         solution=obj1(0,vg,NA,pi0,T)
 # objective function to find the parameter whose deviance is 3.841 from the maximum
         obj2=function(param) {
-          (2*(obj1(param,vg=vg,cov12=param,pi0=pi0)-llhd)-qchisq(.95,1))^2
+          (2*(obj1(param,vg=vg,cov12=param,pi0=pi0)-llhd)-qchisq(1-alpha,1))^2
         }
         upperBound=sqrt(vg[1])
         if (bidirectional) upperBound=min(upperBound,sqrt(vg[1]*vg[2]))
@@ -288,7 +290,7 @@ if (errorMsg=="" & nparam>0) {
       else {
 # objective function to find the parameter whose deviance is 3.841 from the maximum
         obj2=function(param) {
-          (2*(obj1(param,vg=vg,cov12=cov12,pi0=pi0)-llhd)-qchisq(.95,1))^2
+          (2*(obj1(param,vg=vg,cov12=cov12,pi0=pi0)-llhd)-qchisq(1-alpha,1))^2
         }
         solutionLo=optimise(obj2,c(0,solution))$minimum
         solutionHi=optimise(obj2,c(solution,1))$minimum
@@ -306,7 +308,7 @@ if (errorMsg=="" & nparam>0) {
           if (name=="cov12") cov12=param
           if (nparam==1) obj2llhd=optimise(obj1,interval=c(0,1),vg=vg,cov12=cov12,pi0=pi0)$objective
           else obj2llhd=optim(initial_tmp,obj1,vg=vg,cov12=cov12,pi0=pi0)$value
-          (2*(obj2llhd-llhd)-qchisq(.95,1))^2
+          (2*(obj2llhd-llhd)-qchisq(1-alpha,1))^2
         }
       i=1
 # profile CI for vg1
@@ -446,8 +448,8 @@ if (errorMsg=="" & nparam>0) {
     }
     ncp=ncp_orig
     for(i in 1:nparam) {
-      solutionLo[i]=quantile(bootsolution[,i],.025)
-      solutionHi[i]=quantile(bootsolution[,i],.975)
+      solutionLo[i]=quantile(bootsolution[,i],alpha/2)
+      solutionHi[i]=quantile(bootsolution[,i],1-alpha/2)
     }
   }
 
